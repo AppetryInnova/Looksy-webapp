@@ -62,7 +62,7 @@ async function main() {
           });
           console.log(`📝 ${botName} posted: ${commentText}`);
         } catch (e) {
-          console.error(`❌ Failed to generate content for ${botName}:`, e.message);
+          console.error(`❌ Failed to generate content for ${botName}:`, (e as any).message);
         }
       }
     }
