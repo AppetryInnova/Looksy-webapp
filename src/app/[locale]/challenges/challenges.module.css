@@ -1,0 +1,342 @@
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 16px 100px;
+    box-sizing: border-box;
+}
+
+.headerArea {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+    padding: 0 8px;
+}
+
+.title {
+    font-size: clamp(2rem, 8vw, 2.8rem);
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    color: var(--color-text-dim);
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.pointsBadge {
+    padding: 10px 20px;
+    background: var(--glass-surface);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    color: #a855f7;
+    border-radius: var(--radius-xl);
+    font-weight: 800;
+    font-family: var(--font-display);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+[data-theme='dark'] .pointsBadge {
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.4);
+}
+
+.heroCard {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    border-radius: 32px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    cursor: pointer;
+    box-shadow: var(--shadow-premium);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.heroCard:hover {
+    transform: scale(1.01);
+}
+
+.heroImage {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    transition: transform 1s ease;
+}
+
+.heroCard:hover .heroImage {
+    transform: scale(1.05);
+}
+
+.heroOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
+}
+
+.heroContent {
+    position: absolute;
+    bottom: 48px;
+    left: 48px;
+    max-width: 600px;
+    z-index: 5;
+}
+
+.badgeRow {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.heroBadge {
+    padding: 6px 14px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badgeViral {
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+.badgeTime {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    color: white;
+}
+
+.heroTitle {
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    font-weight: 900;
+    color: white;
+    line-height: 0.9;
+    margin-bottom: 20px;
+    font-family: var(--font-display);
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.heroDesc {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.15rem;
+    line-height: 1.5;
+    margin-bottom: 32px;
+}
+
+.heroTimeLabel {
+    position: absolute;
+    top: 40px;
+    right: 48px;
+    text-align: right;
+    color: white;
+}
+
+.timeBig {
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1;
+    font-family: var(--font-display);
+    text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.timeSub {
+    font-size: 0.8rem;
+    font-weight: 800;
+    opacity: 0.7;
+    letter-spacing: 0.1em;
+}
+
+.controlsBar {
+    position: sticky;
+    top: 85px;
+    z-index: 100;
+    display: flex;
+    background: var(--glass-surface);
+    backdrop-filter: blur(20px) saturate(180%);
+    padding: 8px;
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    margin-bottom: 40px;
+    box-shadow: var(--shadow-premium);
+}
+
+.filterScroll {
+    display: flex;
+    gap: 4px;
+    background: rgba(0, 0, 0, 0.04);
+    padding: 4px;
+    border-radius: 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1;
+}
+
+[data-theme='dark'] .filterScroll {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.filterScroll::-webkit-scrollbar {
+    display: none;
+}
+
+.filterButton {
+    padding: 10px 24px;
+    border-radius: 16px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-dim);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.filterButtonActive {
+    background: white;
+    color: #111;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] .filterButtonActive {
+    background: var(--glass-elevated);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filterButton:hover:not(.filterButtonActive) {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text);
+}
+
+.challengeGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 24px;
+}
+
+.challengeCard {
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: pointer;
+}
+
+.challengeCard:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-premium);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.cardImageArea {
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cardImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.challengeCard:hover .cardImage {
+    transform: scale(1.1);
+}
+
+.xpBadge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    color: #34d399;
+    font-weight: 800;
+    font-size: 0.8rem;
+    border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.cardContent {
+    padding: 24px;
+}
+
+.cardTopRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.cardTitle {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--color-text);
+    line-height: 1.2;
+}
+
+.difficultyTag {
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.diffHard { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+.diffMedium { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+.diffEasy { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+
+.cardDesc {
+    font-size: 0.95rem;
+    color: var(--color-text-dim);
+    line-height: 1.6;
+    margin-bottom: 24px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cardStats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--glass-border);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-dim);
+}
+
+.statItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+@media (max-width: 768px) {
+    .headerArea { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .heroContent { left: 24px; bottom: 24px; }
+    .heroTimeLabel { top: 24px; right: 24px; }
+    .timeBig { font-size: 2.5rem; }
+}

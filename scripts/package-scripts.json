@@ -1,0 +1,11 @@
+{
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint",
+        "generate:wardrobe": "node scripts/generate-wardrobe-images.js",
+        "update:wardrobe": "node scripts/update-starter-pack.js",
+        "setup:wardrobe": "npm run generate:wardrobe && npm run update:wardrobe"
+    }
+}

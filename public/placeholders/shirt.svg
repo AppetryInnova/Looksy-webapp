@@ -1,0 +1,21 @@
+<svg width="400" height="500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="500" fill="#f8f9fa"/>
+  <g transform="translate(200, 250)">
+    <!-- Formal shirt shape -->
+    <path d="M -80,-100 L -100,-80 L -100,-40 L -80,-40 L -80,100 L 80,100 L 80,-40 L 100,-40 L 100,-80 L 80,-100 L 60,-100 L 60,-110 L -60,-110 L -60,-100 Z" 
+          fill="#ffffff" 
+          stroke="#dee2e6" 
+          stroke-width="2"/>
+    <!-- Collar -->
+    <path d="M -30,-110 L -40,-100 L -20,-90 L 0,-110 L 20,-90 L 40,-100 L 30,-110 Z" 
+          fill="#ffffff" 
+          stroke="#dee2e6" 
+          stroke-width="2"/>
+    <!-- Buttons -->
+    <circle cx="0" cy="-60" r="4" fill="#6c757d"/>
+    <circle cx="0" cy="-30" r="4" fill="#6c757d"/>
+    <circle cx="0" cy="0" r="4" fill="#6c757d"/>
+    <circle cx="0" cy="30" r="4" fill="#6c757d"/>
+  </g>
+  <text x="200" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#6c757d">SHIRT</text>
+</svg>

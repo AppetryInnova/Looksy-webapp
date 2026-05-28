@@ -1,0 +1,247 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import logger from "./logger";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
+export type AnalysisMode = 'OUTFIT' | 'BEAUTY' | 'COLOR' | 'WARDROBE';
+
+// Models to try in order - each has independent quotas on the free tier
+const TEXT_MODELS = [
+  "gemini-3.1-pro-preview",
+  "gemini-3-flash-preview",
+  "gemini-2.5-flash",
+  "gemini-2.0-flash",
+  "gemini-1.5-flash"
+];
+
+const IMAGE_MODELS = [
+  "gemini-3.1-pro-preview",
+  "gemini-3-pro-image-preview",
+  "gemini-2.5-pro",
+  "gemini-2.0-flash-exp"
+];
+
+function isQuotaError(error: any): boolean {
+  const msg = error?.message || error?.toString() || '';
+  return msg.includes('429') || msg.includes('Too Many Requests') || msg.includes('quota');
+}
+
+async function runWithModelFallback(
+  models: string[],
+  fn: (modelName: string) => Promise<any>
+): Promise<any> {
+  let lastError: any = null;
+  for (const modelName of models) {
+    try {
+      return await fn(modelName);
+    } catch (error: any) {
+      lastError = error;
+      if (isQuotaError(error)) {
+        logger.warn(`Quota exceeded for ${modelName}, trying next model...`);
+        continue; // Try next model
+      }
+      throw error; // Non-quota error, re-throw immediately
+    }
+  }
+  // All models exhausted
+  if (isQuotaError(lastError)) {
+    throw new Error('QUOTA_EXCEEDED');
+  }
+  throw lastError;
+}
+
+export async function analyzeImageCore(
+  base64Data: string,
+  mimeType: string,
+  mode: AnalysisMode = 'OUTFIT',
+  locale: string = 'es',
+  location: string = '',
+  facialProfile: string = ''
+) {
+  const prompts = {
+    OUTFIT: `
+      Eres el Asesor de Estilo Personal de Looksy, experto en moda de lujo y tendencias actuales.
+      Analiza la imagen adjunta (un outfit o persona vestida).
+      Contexto del usuario: Ubicación: ${location || 'Global'}.
+      Responde en ${locale === 'es' ? 'Español' : 'English'} siguiendo estrictamente este formato JSON:
+      {
+        "feedback": "Un análisis detallado (3-4 párrafos) que proyecte exclusividad. Habla sobre la coherencia del outfit, el uso de colores y texturas, y cómo se adapta a la ubicación mencionada.",
+        "harmonyScore": 0-100,
+        "style": "Nombre del estilo (ej. Quiet Luxury, Streetwear, Old Money)",
+        "pros": ["mínimo 3 aciertos técnicos"],
+        "cons": ["mínimo 2 puntos de mejora"],
+        "tips": ["3 consejos de experto para elevar el look"]
+      }
+    `,
+    BEAUTY: `
+      Eres un experto en visagismo y estética facial de alta gama para Looksy.
+      Analiza la foto del rostro adjunta.
+      Perfil facial previo: ${facialProfile || 'No analizado'}.
+      Responde en ${locale === 'es' ? 'Español' : 'English'} siguiendo estrictamente este formato JSON:
+      {
+        "feedback": "Análisis detallado de la simetría, proporciones y armonía facial. Proyecta un tono profesional y empoderador.",
+        "harmonyScore": 0-100,
+        "faceShape": "Forma identificada (Ovalada, Diamante, etc.)",
+        "skinTone": "Subtono y estación cromática",
+        "recommendations": {
+          "makeup": "Técnicas de maquillaje sugeridas",
+          "hairstyle": "Estilos de cabello ideales"
+        }
+      }
+    `,
+    COLOR: `
+      Realiza un análisis de colorimetría avanzado. Identifica la estación (Primavera, Verano, Otoño, Invierno) y los colores que más favorecen.
+      Responde JSON: { "feedback": "Análisis de color", "harmonyScore": 0-100, "palette": ["hex codes"], "season": "string" }
+    `,
+    WARDROBE: `
+      Identifica todas las prendas en la imagen. Clasifícalas y describe su estilo.
+      Responde JSON: { "feedback": "Resumen de prendas", "harmonyScore": 0-100, "items": [{ "category": "string", "color": "string", "style": "string" }] }
+    `
+  };
+
+  try {
+    return await runWithModelFallback(TEXT_MODELS, async (modelName) => {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { response_mime_type: "application/json" }
+      });
+
+      const result = await model.generateContent([
+        prompts[mode] || prompts.OUTFIT,
+        { inlineData: { data: base64Data, mimeType } }
+      ]);
+
+      const text = result.response.text();
+      return JSON.parse(text);
+    });
+  } catch (error: any) {
+    logger.error(`Error in analyzeImageCore (${mode}):`, error.message);
+    throw error;
+  }
+}
+
+export async function analyzeImage(base64Data: string, mimeType: string, mode: AnalysisMode = 'OUTFIT') {
+  // Backwards compatibility wrapper
+  const result = await analyzeImageCore(base64Data, mimeType, mode);
+  return result;
+}
+
+export async function identifyGarment(base64Data: string, mimeType: string) {
+  try {
+    return await runWithModelFallback(TEXT_MODELS, async (modelName) => {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const prompt = `Analiza esta prenda y devuelve JSON: { "category": "TOP"|"BOTTOM"|"SHOES"|"ACCESSORY", "color": "string", "style": "string" }`;
+      const result = await model.generateContent([prompt, { inlineData: { data: base64Data, mimeType } }]);
+      const text = result.response.text();
+      return JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+    });
+  } catch (error: any) {
+    logger.error('Error in identifyGarment:', error.message);
+    throw error;
+  }
+}
+
+export async function analyzeFit(
+  userImageBase64: string,
+  garmentImageBase64: string,
+  locale: string = 'es',
+  garmentCategory: string = 'top'
+) {
+  const prompt = `
+    Eres un Asesor de Imagen de Lujo. Tienes dos imágenes:
+    1. El "Clon Digital" del usuario (su cuerpo y rostro).
+    2. Una prenda de ropa (${garmentCategory}).
+    
+    Analiza ambas. Responde en ${locale} con este JSON exacto:
+    { "fitAnalysis": "string", "styleVerdict": "string", "matchScore": 0-100, "suggestions": ["list"] }
+  `;
+
+  return runWithModelFallback(TEXT_MODELS, async (modelName) => {
+    const model = genAI.getGenerativeModel({ model: modelName });
+    const result = await model.generateContent([
+      prompt,
+      { inlineData: { data: userImageBase64, mimeType: "image/jpeg" } },
+      { inlineData: { data: garmentImageBase64, mimeType: "image/jpeg" } }
+    ]);
+    const text = result.response.text();
+    const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    return JSON.parse(cleaned.substring(start, end + 1));
+  });
+}
+
+export async function generateNanoBananaVTO(
+  userImageBase64: string,
+  garmentImageBase64: string,
+  garmentCategory: string = 'top'
+) {
+  const prompt = `
+    VIRTUAL TRY-ON. You MUST generate a new image.
+    - Person: IMAGE 1
+    - Garment (${garmentCategory}): IMAGE 2
+    Generate a photorealistic fashion image of the person wearing the garment.
+    Maintain face identity, body shape, and pose exactly.
+    Output the generated image.
+  `;
+
+  try {
+    return await runWithModelFallback(IMAGE_MODELS, async (modelName) => {
+      const model = genAI.getGenerativeModel({ model: modelName, generationConfig: { temperature: 0.7 } });
+      const result = await model.generateContent([
+        prompt,
+        { inlineData: { data: userImageBase64, mimeType: "image/jpeg" } },
+        { inlineData: { data: garmentImageBase64, mimeType: "image/jpeg" } }
+      ]);
+      const response = await result.response;
+      const imagePart = response.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+      if (imagePart?.inlineData) {
+        return `data:image/jpeg;base64,${imagePart.inlineData.data}`;
+      }
+      logger.warn(`${modelName} returned no image part — falling back`);
+      return null;
+    });
+  } catch (error: any) {
+    logger.error("Nano Banana VTO failed on all models:", error.message);
+    throw error;
+  }
+}
+
+export async function generateDailyOutfit(context: any) {
+  try {
+    return await runWithModelFallback(TEXT_MODELS, async (modelName) => {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const prompt = `Sugiere un outfit diario basado en: ${JSON.stringify(context)}. Responde JSON: { "message": "string", "selectedItemIds": ["ids"] }`;
+      const result = await model.generateContent(prompt);
+      return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
+    });
+  } catch (error: any) {
+    logger.error('Error in generateDailyOutfit:', error.message);
+    throw error;
+  }
+}
+
+export async function generateChallenges() {
+  try {
+    return await runWithModelFallback(TEXT_MODELS, async (modelName) => {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const prompt = `Genera 3 retos de moda. Responde JSON array: [{ "title": "string", "description": "string" }]`;
+      const result = await model.generateContent(prompt);
+      return JSON.parse(result.response.text().replace(/```json/g, '').replace(/```/g, '').trim());
+    });
+  } catch (error: any) {
+    logger.error('Error in generateChallenges:', error.message);
+    throw error;
+  }
+}
+
+export async function generateEmbedding(text: string): Promise<number[]> {
+  try {
+    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+    const result = await model.embedContent(text);
+    return result.embedding.values;
+  } catch (error: any) {
+    logger.error('Error generating embedding:', error.message);
+    throw error;
+  }
+}

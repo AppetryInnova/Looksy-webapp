@@ -1,0 +1,232 @@
+{
+  "generatedAt": "2025-12-15T21:50:54.243Z",
+  "totalItems": 28,
+  "successCount": 28,
+  "failCount": 0,
+  "items": [
+    {
+      "category": "top",
+      "name": "white-tshirt-casual",
+      "prompt": "White cotton t-shirt laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "white",
+      "filename": "white-tshirt-casual.png",
+      "success": true
+    },
+    {
+      "category": "top",
+      "name": "black-tshirt-streetwear",
+      "prompt": "Black streetwear t-shirt laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "black",
+      "filename": "black-tshirt-streetwear.png",
+      "success": true
+    },
+    {
+      "category": "top",
+      "name": "navy-tshirt-casual",
+      "prompt": "Navy blue casual t-shirt laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "navy",
+      "filename": "navy-tshirt-casual.png",
+      "success": true
+    },
+    {
+      "category": "top",
+      "name": "white-shirt-formal",
+      "prompt": "White formal dress shirt laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "white",
+      "filename": "white-shirt-formal.png",
+      "success": true
+    },
+    {
+      "category": "top",
+      "name": "blue-shirt-smart",
+      "prompt": "Light blue smart casual button-up shirt laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "blue",
+      "filename": "blue-shirt-smart.png",
+      "success": true
+    },
+    {
+      "category": "top",
+      "name": "gray-sweater-casual",
+      "prompt": "Gray casual sweater laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "gray",
+      "filename": "gray-sweater-casual.png",
+      "success": true
+    },
+    {
+      "category": "bottom",
+      "name": "blue-jeans-casual",
+      "prompt": "Blue denim jeans laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "blue",
+      "filename": "blue-jeans-casual.png",
+      "success": true
+    },
+    {
+      "category": "bottom",
+      "name": "black-jeans-casual",
+      "prompt": "Black denim jeans laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "black",
+      "filename": "black-jeans-casual.png",
+      "success": true
+    },
+    {
+      "category": "bottom",
+      "name": "navy-pants-formal",
+      "prompt": "Navy blue formal dress pants laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "navy",
+      "filename": "navy-pants-formal.png",
+      "success": true
+    },
+    {
+      "category": "bottom",
+      "name": "gray-pants-smart",
+      "prompt": "Gray smart casual pants laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "gray",
+      "filename": "gray-pants-smart.png",
+      "success": true
+    },
+    {
+      "category": "bottom",
+      "name": "khaki-chinos-casual",
+      "prompt": "Khaki chino pants laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "khaki",
+      "filename": "khaki-chinos-casual.png",
+      "success": true
+    },
+    {
+      "category": "shoes",
+      "name": "white-sneakers-sport",
+      "prompt": "White sports sneakers placed on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, authentic look, smartphone photography style",
+      "color": "white",
+      "filename": "white-sneakers-sport.png",
+      "success": true
+    },
+    {
+      "category": "shoes",
+      "name": "black-sneakers-casual",
+      "prompt": "Black casual sneakers placed on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, authentic look, smartphone photography style",
+      "color": "black",
+      "filename": "black-sneakers-casual.png",
+      "success": true
+    },
+    {
+      "category": "shoes",
+      "name": "brown-shoes-formal",
+      "prompt": "Brown leather formal dress shoes placed on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, authentic look, smartphone photography style",
+      "color": "brown",
+      "filename": "brown-shoes-formal.png",
+      "success": true
+    },
+    {
+      "category": "shoes",
+      "name": "black-shoes-formal",
+      "prompt": "Black leather formal dress shoes placed on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, authentic look, smartphone photography style",
+      "color": "black",
+      "filename": "black-shoes-formal.png",
+      "success": true
+    },
+    {
+      "category": "shoes",
+      "name": "beige-heels-elegant",
+      "prompt": "Beige elegant high heels placed on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, authentic look, smartphone photography style",
+      "color": "beige",
+      "filename": "beige-heels-elegant.png",
+      "success": true
+    },
+    {
+      "category": "outerwear",
+      "name": "black-jacket-urban",
+      "prompt": "Black urban jacket laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "black",
+      "filename": "black-jacket-urban.png",
+      "success": true
+    },
+    {
+      "category": "outerwear",
+      "name": "navy-jacket-classic",
+      "prompt": "Navy blue classic jacket laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "navy",
+      "filename": "navy-jacket-classic.png",
+      "success": true
+    },
+    {
+      "category": "outerwear",
+      "name": "gray-coat-winter",
+      "prompt": "Gray winter coat laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "gray",
+      "filename": "gray-coat-winter.png",
+      "success": true
+    },
+    {
+      "category": "outerwear",
+      "name": "camel-coat-elegant",
+      "prompt": "Camel colored elegant coat laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "camel",
+      "filename": "camel-coat-elegant.png",
+      "success": true
+    },
+    {
+      "category": "dress",
+      "name": "pink-dress-elegant",
+      "prompt": "Pink elegant dress laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "pink",
+      "filename": "pink-dress-elegant.png",
+      "success": true
+    },
+    {
+      "category": "dress",
+      "name": "black-dress-formal",
+      "prompt": "Black formal dress laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "black",
+      "filename": "black-dress-formal.png",
+      "success": true
+    },
+    {
+      "category": "dress",
+      "name": "navy-dress-professional",
+      "prompt": "Navy blue professional dress laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "navy",
+      "filename": "navy-dress-professional.png",
+      "success": true
+    },
+    {
+      "category": "dress",
+      "name": "blue-dress-casual",
+      "prompt": "Light blue casual dress laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, organic folds, authentic look, smartphone photography style",
+      "color": "blue",
+      "filename": "blue-dress-casual.png",
+      "success": true
+    },
+    {
+      "category": "accessory",
+      "name": "silver-watch-minimal",
+      "prompt": "Silver minimalist wristwatch placed on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, authentic look, smartphone photography style",
+      "color": "silver",
+      "filename": "silver-watch-minimal.png",
+      "success": true
+    },
+    {
+      "category": "accessory",
+      "name": "gold-watch-luxury",
+      "prompt": "Gold luxury wristwatch placed on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, authentic look, smartphone photography style",
+      "color": "gold",
+      "filename": "gold-watch-luxury.png",
+      "success": true
+    },
+    {
+      "category": "accessory",
+      "name": "black-belt-leather",
+      "prompt": "Black leather belt laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, authentic look, smartphone photography style",
+      "color": "black",
+      "filename": "black-belt-leather.png",
+      "success": true
+    },
+    {
+      "category": "accessory",
+      "name": "brown-belt-classic",
+      "prompt": "Brown leather belt laid on a matte white surface, illuminated by natural window sunlight coming from the side, soft cast shadows, authentic look, smartphone photography style",
+      "color": "brown",
+      "filename": "brown-belt-classic.png",
+      "success": true
+    }
+  ]
+}

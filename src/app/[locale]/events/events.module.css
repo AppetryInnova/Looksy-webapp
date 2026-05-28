@@ -1,0 +1,87 @@
+.container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px 16px 90px;
+    max-width: 800px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.header {
+    margin-bottom: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+    color: var(--color-accent);
+}
+
+.eventsGrid {
+    display: grid;
+    gap: 20px;
+}
+
+.eventCard {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.eventTitle {
+    color: var(--color-primary);
+    margin-bottom: 8px;
+}
+
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modalContent {
+    width: 90%;
+    max-width: 500px;
+}
+
+.modalTitle {
+    margin-bottom: 20px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.buttonGroup {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.createButton {
+    flex: 1;
+}
+
+.cancelButton {
+    padding: 12px;
+    border-radius: 50px;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Looksy | Sin Conexión</title>
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: linear-gradient(to bottom, #111 0%, #000 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        h1 { margin-bottom: 0.5rem; font-weight: 600; }
+        p { color: #aaa; margin-bottom: 2rem; max-width: 300px; }
+        .glass-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 24px;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <img src="/logo.png" alt="Looksy Logo" style="width: 120px; margin-bottom: 2rem;" />
+    <h1>Modo Offline</h1>
+    <p>No tienes conexión a internet en este momento, pero puedes seguir navegando tu Ropero.</p>
+    <button class="glass-btn" onclick="window.location.reload()">Reintentar Conexión</button>
+</body>
+</html>

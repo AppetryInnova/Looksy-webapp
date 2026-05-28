@@ -1,0 +1,17 @@
+<svg width="400" height="500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="500" fill="#f8f9fa"/>
+  <g transform="translate(200, 250)">
+    <!-- Jacket shape -->
+    <path d="M -90,-100 L -110,-60 L -110,100 L -60,100 L -60,0 L -20,0 L -20,-110 L -60,-110 L -60,-100 Z" 
+          fill="#2c3e50" 
+          stroke="#1a252f" 
+          stroke-width="2"/>
+    <path d="M 90,-100 L 110,-60 L 110,100 L 60,100 L 60,0 L 20,0 L 20,-110 L 60,-110 L 60,-100 Z" 
+          fill="#2c3e50" 
+          stroke="#1a252f" 
+          stroke-width="2"/>
+    <!-- Zipper -->
+    <line x1="0" y1="-110" x2="0" y2="100" stroke="#6c757d" stroke-width="3"/>
+  </g>
+  <text x="200" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#6c757d">JACKET</text>
+</svg>

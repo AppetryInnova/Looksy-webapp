@@ -1,0 +1,370 @@
+.feedContainer {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 0 100px 0;
+    box-sizing: border-box;
+}
+
+.followButton {
+    margin-left: auto;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.followButton.following {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-dim);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.followButton:hover:not(.following) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.storiesContainer {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.storiesContainer::-webkit-scrollbar {
+    display: none;
+}
+
+.feedCard {
+    background: hsl(var(--background));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.feedCard:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-premium);
+}
+
+.feedCard:active {
+    transform: scale(0.99);
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+}
+
+.userAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: var(--font-bold);
+    font-size: var(--font-size-lg);
+}
+
+.userInfo {
+    flex: 1;
+}
+
+.username {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: hsl(var(--foreground));
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.verifiedBadge {
+    color: #3b82f6;
+    font-size: 0.85rem;
+}
+
+.timestamp {
+    font-size: 0.75rem;
+    color: hsl(var(--foreground) / 0.5);
+}
+
+.imageContainer {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/5;
+    background: var(--color-surface);
+    overflow: hidden;
+}
+
+.scanImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.scoreOverlay {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--glass-elevated);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 8px 18px;
+    border-radius: var(--radius-full);
+    font-weight: 800;
+    font-size: 0.85rem;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--glass-border);
+}
+
+.scoreHigh {
+    color: var(--color-primary-light);
+}
+
+.scoreMedium {
+    color: var(--color-accent);
+}
+
+.scoreLow {
+    color: var(--color-alert);
+}
+
+.cardActions {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px;
+    align-items: center;
+}
+
+.actionButton {
+    background: hsl(var(--background) / 0.5);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: hsl(var(--foreground));
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+}
+
+.actionButton:hover {
+    background: hsl(var(--background));
+    transform: translateY(-2px);
+}
+
+.actionButton:active {
+    transform: scale(0.95);
+}
+
+.actionButton.liked {
+    color: var(--color-alert);
+}
+
+.actionIcon {
+    font-size: 1.5rem;
+    transition: transform var(--transition-fast);
+}
+
+.actionButton:hover .actionIcon {
+    transform: scale(1.1);
+}
+
+.actionCount {
+    font-weight: var(--font-semibold);
+    font-size: var(--font-size-sm);
+}
+
+.emptyState {
+    text-align: center;
+    padding: var(--space-16) var(--space-4);
+}
+
+/* Loading skeleton */
+.skeleton {
+    background: linear-gradient(90deg,
+            var(--color-surface) 0%,
+            var(--color-border-light) 50%,
+            var(--color-surface) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeletonCard {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--space-4);
+    overflow: hidden;
+}
+
+.skeletonHeader {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+}
+
+.skeletonAvatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.skeletonText {
+    flex: 1;
+}
+
+.skeletonLine {
+    height: 12px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+}
+
+.skeletonImage {
+    width: 100%;
+    aspect-ratio: 4/5;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .feedContainer {
+        padding: 0 0 120px 0;
+    }
+
+    .feedCard {
+        border-radius: 0;
+        margin-bottom: 0;
+        border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .imageContainer {
+        aspect-ratio: 1/1;
+    }
+}
+
+/* New Animations and Interactivity */
+.refreshIndicator {
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: 100;
+}
+
+.refreshSpinner {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    color: var(--color-text);
+}
+
+.refreshing .refreshSpinner {
+    animation: spin 1s linear infinite;
+}
+
+.createPollButtonContainer {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 16px;
+}
+
+.heartAnimationOverlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.heartIcon {
+    font-size: 80px;
+    animation: heartPop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes heartPop {
+    0% {
+        transform: scale(0) rotate(-45deg);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.5) rotate(0deg);
+        opacity: 1;
+    }
+
+    70% {
+        transform: scale(1.2) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 0;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}

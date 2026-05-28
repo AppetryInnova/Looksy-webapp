@@ -1,0 +1,14 @@
+<svg width="400" height="500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="500" fill="#f8f9fa"/>
+  <g transform="translate(200, 250)">
+    <!-- Jeans shape -->
+    <path d="M -60,-100 L -60,80 L -70,100 L -50,100 L -40,80 L -40,0 L 40,0 L 40,80 L 50,100 L 70,100 L 60,80 L 60,-100 Z" 
+          fill="#4a90e2" 
+          stroke="#357abd" 
+          stroke-width="2"/>
+    <!-- Pockets -->
+    <rect x="-50" y="-60" width="30" height="30" fill="#357abd" opacity="0.3"/>
+    <rect x="20" y="-60" width="30" height="30" fill="#357abd" opacity="0.3"/>
+  </g>
+  <text x="200" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#6c757d">JEANS</text>
+</svg>

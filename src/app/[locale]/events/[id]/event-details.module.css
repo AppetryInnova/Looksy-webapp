@@ -1,0 +1,135 @@
+.container {
+    width: 100%;
+    padding: 20px 16px 100px;
+    max-width: 800px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.backButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.backButton:hover {
+    opacity: 0.8;
+}
+
+.loading,
+.error {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+}
+
+.title {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+    font-weight: 700;
+    margin-bottom: 24px;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin: 24px 0;
+}
+
+.detailItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.icon {
+    font-size: 1.5rem;
+    min-width: 40px;
+    text-align: center;
+}
+
+.detailLabel {
+    font-size: 0.8rem;
+    color: #999;
+    margin-bottom: 4px;
+}
+
+.detailValue {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.sectionTitle {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--color-text);
+}
+
+.attendeesGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 16px;
+}
+
+.attendeeCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.attendeeAvatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--gradient-primary);
+}
+
+.attendeeAvatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatarPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+}
+
+.attendeeName {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    color: var(--color-text);
+}
+
+.suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.suggestions p {
+    padding: 12px;
+    background: rgba(16, 185, 129, 0.1);
+    border-left: 3px solid var(--color-primary);
+    border-radius: 8px;
+    color: var(--color-text);
+}

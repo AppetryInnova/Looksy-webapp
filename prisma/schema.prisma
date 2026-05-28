@@ -1,0 +1,631 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [vector]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  // Custom fields
+  username      String?
+  avatarUrl     String?
+  stylePoints   Int             @default(0)
+  level         String          @default("New Face")
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  items         Item[]
+  scans         Scan[]
+  eventsCreated Event[]
+  eventsAttending EventAttendee[]
+  badges        Badge[]
+  subscription  Subscription?
+
+  // Preferences
+  currentStreak Int             @default(0)
+  maxStreak     Int             @default(0)
+  lastActiveDate DateTime?
+
+  emailNotifications Boolean @default(true)
+  pushNotifications  Boolean @default(true)
+  
+  // Onboarding
+  onboardingCompleted Boolean @default(false)
+  stylePreferences    String? // JSON string: { styles: [], brands: [], colors: [] }
+  facialProfile       String? // JSON string: { faceShape, colorPalette, skinTone, eyeShape, etc. }
+  
+  // Enhanced Profile
+  bio               String?
+  coverPhotoUrl     String?
+  pronouns          String?
+  location          String?
+  socialLinks       String? // JSON: { instagram: "", tiktok: "", website: "" }
+  
+  // Onboarding Preferences
+  sizePreferences   String? // JSON: { top: "M", bottom: "32", shoe: "10" }
+  budgetRange       String? // JSON: { min: 0, max: 500 }
+  // Virtual Try-On (Digital Twin)
+  baseModelUrl      String?
+  bodyMeasurements  String? // JSON: { height: 170, weight: 65, bodyType: "athletic" }
+  gravityTokens     Int      @default(5)
+  lastTokenReset    DateTime?
+  
+  // Privacy Settings
+  privacySettings   String? // JSON: { profileVisibility: "public", wardrobeVisibility: "public", allowComments: true }
+  
+  // Granular Notification Preferences
+  notifyLikes       Boolean @default(true)
+  notifyComments    Boolean @default(true)
+  notifyFollows     Boolean @default(true)
+  notifyEvents      Boolean @default(true)
+  notifyBattles     Boolean @default(true)
+  notifyRecommendations Boolean @default(true)
+  
+  // Accessibility
+  reducedMotion     Boolean @default(false)
+  highContrast      Boolean @default(false)
+
+  textSize          String  @default("medium") // small, medium, large
+  
+  // Verification & Security
+  isVerified        Boolean @default(false)
+  verificationLevel String  @default("NONE") // NONE, BASIC, BIOMETRIC
+  biometricHash     String? // Hash of facial data for one-account enforcement
+  verifiedAt        DateTime?
+  
+  // Polls
+  polls         Poll[]
+  pollVotes     PollVote[]
+  
+  // Follow relationships
+  following     Follow[] @relation("UserFollowing")
+  followers     Follow[] @relation("UserFollowers")
+
+  // Battles
+  battleEntries BattleEntry[]
+  battleVotes   BattleVote[]
+  
+  // Wishlist
+  wishlist      Wishlist[]
+
+  // Influencer Features
+  isInfluencer    Boolean @default(false)
+  influencerScore Int     @default(0)
+  walletBalance   Float   @default(0.0)
+  
+  socialConnections SocialConnection[]
+  campaignApplications CampaignApplication[]
+  
+  // Store Ownership
+  ownedStores   Store[] @relation("StoreOwner")
+
+  // Feed Social
+  posts         Post[]
+
+  // Push Notifications
+  pushSubscriptions PushSubscription[]
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  plan      String   @default("FREE") // FREE, PRO, ELITE
+  status    String   @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED
+  startDate DateTime @default(now())
+  endDate   DateTime?
+
+  // Stripe Integration
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Badge {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  iconUrl     String
+  criteria    String   // JSON string describing how to unlock
+  users       User[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Item {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  imageUrl  String
+  category  String
+  color     String?
+  brand     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // AI Attributes
+  style       String?
+  occasion    String?
+  season      String?
+  embedding   Unsupported("vector(768)")?
+  
+  // Relations
+  plannedForEvents EventAttendee[]
+}
+
+model Store {
+  id           String      @id @default(cuid())
+  name         String
+  description  String?
+  address      String
+  lat          Float       // Latitude
+  lng          Float       // Longitude
+  type         String      // Boutique, Mall, Vintage, Pop-up
+  rating       Float       @default(4.5)
+  imageUrl     String?
+  openingHours String?     // e.g. "9:00 - 20:00"
+  items        StoreItem[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  // Business Features
+  ownerId      String?
+  owner        User?       @relation("StoreOwner", fields: [ownerId], references: [id])
+  campaigns    Campaign[]
+}
+
+model StoreItem {
+  id        String     @id @default(cuid())
+  storeId   String
+  store     Store      @relation(fields: [storeId], references: [id])
+  name      String
+  price     Float
+  imageUrl  String
+  category  String
+  inStock   Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  wishlist  Wishlist[]
+}
+
+model Scan {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  photoUrl     String
+  aiFeedback   String
+  harmonyScore Int
+  status       String   @default("COMPLETED") // COMPLETED, PENDING, FAILED
+  createdAt    DateTime @default(now())
+  likes        Like[]
+  comments     Comment[]
+  polls        Poll[]   // Polls asking for advice on this outfit
+  
+  // Innovcation: Battle Entries
+  battleEntries BattleEntry[]
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  scanId    String
+  createdAt DateTime @default(now())
+  
+  scan Scan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, scanId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  username  String   // Denormalized for performance
+  scanId    String
+  createdAt DateTime @default(now())
+  
+  scan Scan @relation(fields: [scanId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  date            DateTime // Start time
+  endTime         DateTime?
+  location        String
+  dressCode       String
+  imageUrl        String?
+  visibility      String   @default("PUBLIC") // PUBLIC, PRIVATE, FRIENDS_ONLY
+  category        String?  // Party, Fashion Show, Meetup, Shopping, etc.
+  tags            String?  // JSON array of tags
+  maxAttendees    Int?     // Optional capacity limit
+  requiresApproval Boolean @default(false)
+  coHosts         String?  // JSON array of user IDs
+  creatorId       String
+  creator         User     @relation(fields: [creatorId], references: [id])
+  attendees       EventAttendee[]
+  invitations     EventInvitation[]
+  messages        EventMessage[]
+  photos          EventPhoto[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model EventAttendee {
+  id              String   @id @default(cuid())
+  eventId         String
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  rsvpStatus      String   @default("PENDING") // GOING, MAYBE, NOT_GOING, PENDING
+  responseMessage String?
+  plusOnes        Int      @default(0)
+  plannedOutfitId String?
+  plannedOutfit   Item?    @relation(fields: [plannedOutfitId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([eventId, userId])
+}
+
+
+model EventInvitation {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  inviterId String   // Who sent the invitation
+  inviteeId String   // Who was invited
+  status    String   @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  message   String?  // Optional personal message
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([eventId, inviteeId])
+}
+
+model EventMessage {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  username  String   // Denormalized for performance
+  avatarUrl String?  // Denormalized for performance
+  content   String
+  imageUrl  String?  // Optional image attachment
+  createdAt DateTime @default(now())
+}
+
+model EventPhoto {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  username  String   // Denormalized for performance
+  imageUrl  String
+  caption   String?
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // LIKE, COMMENT, EVENT_INVITE, BADGE_UNLOCK, LEVEL_UP
+  title     String
+  message   String
+  link      String?  // Optional link to related content
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// Polls
+model Poll {
+  id          String       @id @default(cuid())
+  question    String
+  creatorId   String
+  creator     User         @relation(fields: [creatorId], references: [id])
+  scanId      String?      // Optional outfit/scan context
+  scan        Scan?        @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  options     PollOption[]
+  expiresAt   DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model PollOption {
+  id        String     @id @default(cuid())
+  pollId    String
+  poll      Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  text      String
+  imageUrl  String?
+  votes     PollVote[]
+}
+
+model PollVote {
+  id        String     @id @default(cuid())
+  pollId    String     // Optimization for fetching
+  optionId  String
+  option    PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  createdAt DateTime   @default(now())
+
+  @@unique([userId, pollId]) // One vote per poll per user
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String   // User who is following
+  followingId String   // User being followed
+  createdAt   DateTime @default(now())
+  
+  follower    User     @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+  
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// ---------------------------------------------------------
+// INNOVATION: Style Battles 🏆
+// ---------------------------------------------------------
+
+model Battle {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  theme       String        // e.g., "Neon", "Vintage", "Formal"
+  imageUrl    String?       // Cover image for the battle
+  startDate   DateTime      @default(now())
+  endDate     DateTime
+  isActive    Boolean       @default(true)
+  entries     BattleEntry[]
+  createdAt   DateTime      @default(now())
+}
+
+model BattleEntry {
+  id        String       @id @default(cuid())
+  battleId  String
+  battle    Battle       @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  scanId    String
+  scan      Scan         @relation(fields: [scanId], references: [id])
+  votes     BattleVote[]
+  score     Int          @default(0) // Cached vote count
+  createdAt DateTime     @default(now())
+
+  @@unique([battleId, userId]) // One entry per battle per user
+}
+
+model BattleVote {
+  id        String      @id @default(cuid())
+  entryId   String
+  entry     BattleEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  createdAt DateTime    @default(now())
+
+  @@unique([entryId, userId])
+}
+
+model Challenge {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  startDate   DateTime @default(now())
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  
+  // V2 Attributes
+  difficulty  String   // Easy, Medium, Hard
+  category    String   // Trending, New, ForYou
+  xp          Int
+  badgeName   String?
+  rules       String   // JSON string array
+  
+  // AI Context
+  generatedByAI Boolean @default(false)
+  season        String? // Spring, Summer, Autumn, Winter
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Wishlist {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeItemId String
+  storeItem   StoreItem @relation(fields: [storeItemId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  
+  @@unique([userId, storeItemId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------
+// INNOVATION: Influencer & Campaigns 🌟
+// ---------------------------------------------------------
+
+model SocialConnection {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform      String   // INSTAGRAM, TIKTOK, YOUTUBE
+  handle        String
+  followerCount Int      @default(0)
+  profileUrl    String?
+  accessToken   String?  // For future real integration
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, platform])
+}
+
+// Brand model removed - Replaced by Store for Campaigns
+// model Brand { ... }
+
+
+model Campaign {
+  id            String   @id @default(cuid())
+  storeId       String
+  store         Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  title         String
+  description   String
+  imageUrl      String?
+  requirements  String   // JSON: minFollowers, specificPlatform, contentTypes
+  budget        Float?   // Monetary budget
+  reward        String   // e.g. "$50", "Free Product", "Voucher"
+  rewardValue   Float?   // Numeric value for calculations
+  startDate     DateTime
+  endDate       DateTime
+  status        String   @default("DRAFT") // DRAFT, ACTIVE, PAUSED, COMPLETED
+  applications  CampaignApplication[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime   @updatedAt
+}
+
+model CampaignApplication {
+  id          String   @id @default(cuid())
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED, COMPLETED
+  contractStatus String @default("APPLIED") // APPLIED, NEGOTIATING, SIGNED, COMPLETED
+  negotiatedPrice Float?
+  submittedContentUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([campaignId, userId])
+}
+
+// ---------------------------------------------------------
+// FEED SOCIAL — Posts con fotos 📸
+// ---------------------------------------------------------
+
+model Post {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  imageUrl  String?
+  likes     PostLike[]
+  comments  PostComment[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+}
+
+model PostComment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  username  String   // Denormalized for performance
+  avatarUrl String?  // Denormalized for performance
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+}
+
+// ---------------------------------------------------------
+// PUSH NOTIFICATIONS 🔔
+// ---------------------------------------------------------
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------
+// VIRTUAL TRY-ON (ASYNC JOBS) 👗
+// ---------------------------------------------------------
+
+model VTOJob {
+  id              String   @id @default(cuid())
+  userId          String
+  status          String   @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  baseModelUrl    String
+  garmentImageUrl String
+  category        String
+  generatedUrl    String?
+  aiReport        String?  // JSON string
+  error           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+}

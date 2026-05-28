@@ -1,0 +1,388 @@
+.container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px 16px 100px;
+    max-width: 1000px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.coverImage {
+    width: calc(100% + 40px);
+    height: 300px;
+    margin: -20px -20px 20px -20px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    border-radius: 20px 20px 0 0;
+}
+
+.coverOverlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+}
+
+.header {
+    margin-bottom: 20px;
+}
+
+.headerTop {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.visibilityBadge,
+.categoryBadge {
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.hostControls {
+    display: flex;
+    gap: 8px;
+}
+
+.title {
+    font-size: clamp(1.4rem, 6vw, 2rem);
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: var(--color-text);
+    line-height: 1.2;
+}
+
+.description {
+    font-size: 1rem;
+    color: var(--color-text-dim);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detailItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.detailItem strong {
+    color: var(--color-text);
+    display: block;
+}
+
+.detailItem p {
+    color: var(--color-text-dim);
+    margin: 4px 0 0 0;
+    font-size: 0.9rem;
+}
+
+.capacity {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+.capacityBar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-bg-elevated);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.capacityFill {
+    height: 100%;
+    background: var(--gradient-primary);
+    transition: width 0.3s ease;
+}
+
+.capacity p {
+    font-size: 0.9rem;
+    color: var(--color-text-dim);
+    text-align: center;
+}
+
+.rsvpSection {
+    margin-bottom: 20px;
+}
+
+.rsvpSection h3 {
+    margin-bottom: 16px;
+    font-size: 1.2rem;
+    color: var(--color-text);
+}
+
+.rsvpButtons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.rsvpButton {
+    padding: 14px 20px;
+    border-radius: 12px;
+    border: 2px solid;
+    background: transparent;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.rsvpButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.rsvpButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.pendingMessage {
+    margin-top: 12px;
+    padding: 12px;
+    background: #3b82f620;
+    border: 1px solid #3b82f640;
+    border-radius: 8px;
+    color: #3b82f6;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.tabsContainer {
+    margin-bottom: 20px;
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 2px solid var(--color-border);
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.tab {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-weight: 600;
+    color: var(--color-text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.tab:hover {
+    color: var(--color-text);
+    background: var(--color-bg-elevated);
+}
+
+.activeTab {
+    color: var(--color-primary) !important;
+    border-bottom-color: var(--color-primary) !important;
+}
+
+.tabContent {
+    min-height: 200px;
+}
+
+.attendeesList {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.attendeeGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.attendeeGroupTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.attendeeGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.attendeeCard {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: var(--color-bg-elevated);
+    border-radius: 12px;
+    transition: transform 0.2s ease;
+}
+
+.attendeeCard:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.attendeeAvatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.attendeeAvatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatarPlaceholder {
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.attendeeInfo {
+    flex: 1;
+    min-width: 0;
+}
+
+.attendeeInfo strong {
+    display: block;
+    color: var(--color-text);
+    margin-bottom: 4px;
+}
+
+.plusOnes {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: var(--color-primary-alpha);
+    color: var(--color-primary);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.responseMessage {
+    font-size: 0.85rem;
+    color: var(--color-text-dim);
+    margin-top: 4px;
+    font-style: italic;
+}
+
+.plannedOutfit {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.plannedOutfit img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.plannedOutfit span {
+    font-size: 0.8rem;
+    color: var(--color-text-dim);
+}
+
+.emptyState,
+.comingSoon {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--color-text-dim);
+    font-size: 1rem;
+}
+
+.discussionTab,
+.photosTab {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 12px 12px 90px;
+    }
+
+    .coverImage {
+        width: calc(100% + 24px);
+        margin: -12px -12px 12px -12px;
+        height: 200px;
+    }
+
+    .title {
+        font-size: 1.5rem;
+    }
+
+    .rsvpButtons {
+        grid-template-columns: 1fr;
+    }
+
+    .attendeeGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .tabs {
+        gap: 4px;
+    }
+
+    .tab {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+}

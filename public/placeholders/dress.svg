@@ -1,0 +1,13 @@
+<svg width="400" height="500" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="500" fill="#f8f9fa"/>
+  <g transform="translate(200, 250)">
+    <!-- Dress shape -->
+    <path d="M -60,-110 L -80,-90 L -80,-40 L -100,0 L -100,100 L 100,100 L 100,0 L 80,-40 L 80,-90 L 60,-110 L 60,-120 L -60,-120 Z" 
+          fill="#e91e63" 
+          stroke="#c2185b" 
+          stroke-width="2"/>
+    <!-- Belt -->
+    <rect x="-100" y="-10" width="200" height="15" fill="#c2185b"/>
+  </g>
+  <text x="200" y="450" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#6c757d">DRESS</text>
+</svg>
