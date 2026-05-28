@@ -61,6 +61,7 @@ const TopHeader = ({ onMenuToggle }: { onMenuToggle: () => void }) => {
     const levelColor = levelColors[userData?.level || 'New Face'] || '#10b981';
 
     return (
+        <>
         <header
             className={styles.topHeader}
             style={{

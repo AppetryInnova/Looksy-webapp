@@ -321,6 +321,6 @@ export default function VirtualTryOnModal({ isOpen, onClose, initialItem }: Virt
                 }
                 @keyframes spin { to { transform: rotate(360deg); } }
             `}</style>
-        </div>
+        </>
     );
 }

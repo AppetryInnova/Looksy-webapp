@@ -245,3 +245,33 @@ export async function generateEmbedding(text: string): Promise<number[]> {
     throw error;
   }
 }
+
+export async function generateCampaignContent(topic: string, locale: string = 'es') {
+  try {
+    return await runWithModelFallback(TEXT_MODELS, async (modelName) => {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const prompt = `
+        Genera contenido de campaña de marketing de moda premium para el tema: "${topic}".
+        Responde estrictamente en formato JSON en el idioma: ${locale === 'es' ? 'Español' : 'English'}.
+        El JSON debe tener exactamente esta estructura:
+        {
+          "title": "Título sugerido para la campaña",
+          "subjectLine": "Asunto atractivo para email marketing",
+          "description": "Una descripción premium o copy principal de la campaña (1-2 párrafos)",
+          "callToAction": "Texto para el botón de acción (CTA)",
+          "socialMediaPosts": [
+            "Ejemplo de post para Instagram/TikTok con hashtags",
+            "Otro ejemplo de post corto"
+          ]
+        }
+      `;
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      return JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+    });
+  } catch (error: any) {
+    logger.error('Error in generateCampaignContent:', error.message);
+    throw error;
+  }
+}
+
