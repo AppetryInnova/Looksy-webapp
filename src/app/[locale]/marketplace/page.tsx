@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useParams } from 'next/navigation';
 import OptimizedImage from '@/components/OptimizedImage';
 import styles from './marketplace.module.css';
 import { logger } from '@/lib/logger';
@@ -25,6 +26,8 @@ type Product = {
 
 const MarketplacePage = () => {
     const { data: session } = useSession();
+    const params = useParams();
+    const locale = (params?.locale as string) || 'es';
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState<Product[]>([]);
@@ -131,17 +134,54 @@ const MarketplacePage = () => {
             console.warn('Failed to log affiliate click:', err);
         });
 
-        // Construct destination URL: prioritize custom affiliate url, fallback to tag search
+        // Construct destination URL: prioritize custom affiliate url, fallback to regional store search
         let url = product.affiliateUrl || '';
 
         if (!url) {
             const encodedName = encodeURIComponent(product.name);
-            if (product.store.name.toLowerCase().includes('zara')) {
-                url = `https://www.google.com/search?q=Zara+${encodedName}&tbm=shop`;
-            } else if (product.store.name.toLowerCase().includes('amazon')) {
-                url = `https://www.amazon.com/s?k=${encodedName}&tag=looksyapp-20`; // Real affiliate tag
+            const storeLower = product.store.name.toLowerCase();
+            const isBrazil = locale.startsWith('pt');
+
+            if (storeLower.includes('mercado libre') || storeLower.includes('mercadolibre')) {
+                if (isBrazil) {
+                    url = `https://lista.mercadolivre.com.br/${encodedName}`;
+                } else if (locale === 'uy') {
+                    url = `https://listado.mercadolibre.com.uy/${encodedName}`;
+                } else {
+                    url = `https://listado.mercadolibre.com.ar/${encodedName}`;
+                }
+            } else if (storeLower.includes('renner')) {
+                if (isBrazil) {
+                    url = `https://www.lojasrenner.com.br/busca?s=${encodedName}`;
+                } else {
+                    url = `https://www.renner.com.uy/s?Ntt=${encodedName}`;
+                }
+            } else if (storeLower.includes('dafiti')) {
+                if (isBrazil) {
+                    url = `https://www.dafiti.com.br/catalog/?q=${encodedName}`;
+                } else {
+                    url = `https://www.dafiti.com.ar/catalog/?q=${encodedName}`;
+                }
+            } else if (storeLower.includes('zara')) {
+                if (isBrazil) {
+                    url = `https://www.zara.com/br/pt/search?searchTerm=${encodedName}`;
+                } else if (locale === 'uy') {
+                    url = `https://www.zara.com/uy/es/search?searchTerm=${encodedName}`;
+                } else {
+                    url = `https://www.zara.com/ar/es/search?searchTerm=${encodedName}`;
+                }
+            } else if (storeLower.includes('amazon')) {
+                if (isBrazil) {
+                    url = `https://www.amazon.com.br/s?k=${encodedName}&tag=looksyapp-br-21`;
+                } else {
+                    url = `https://www.amazon.com/s?k=${encodedName}&tag=looksyapp-20`;
+                }
+            } else if (storeLower.includes('tiendamia')) {
+                url = `https://tiendamia.com/uy/search?amz=${encodedName}`;
             } else {
-                url = `https://www.google.com/search?q=${encodedName}+buy+online&tbm=shop`;
+                // Localized Google Shopping search fallback
+                const crParam = isBrazil ? 'countryBR' : (locale === 'uy' ? 'countryUY' : 'countryAR');
+                url = `https://www.google.com/search?q=${encodedName}+buy+online&tbm=shop&cr=${crParam}`;
             }
         }
 
