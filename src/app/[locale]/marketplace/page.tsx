@@ -121,22 +121,28 @@ const MarketplacePage = () => {
     };
 
     const handleAffiliateClick = (product: Product) => {
-        // Simulation of affiliate tracking
-        // Track affiliate click for product
+        // Record affiliate click in the database for analytics and conversion tracking
+        fetch('/api/marketplace/clicks', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ storeItemId: product.id })
+        }).catch(err => {
+            // Log warning but don't interrupt the user's shopping flow
+            console.warn('Failed to log affiliate click:', err);
+        });
 
-        // Construct a real-world search query URL
-        // If it's a known brand (simulated by store name), we could direct to their specific search
+        // Construct destination URL: prioritize custom affiliate url, fallback to tag search
+        let url = product.affiliateUrl || '';
 
-        let url = '';
-        const encodedName = encodeURIComponent(product.name);
-
-        if (product.store.name.toLowerCase().includes('zara')) {
-            url = `https://www.google.com/search?q=Zara+${encodedName}&tbm=shop`;
-        } else if (product.store.name.toLowerCase().includes('amazon')) {
-            url = `https://www.amazon.com/s?k=${encodedName}&tag=looksy-20`; // Fake tag
-        } else {
-            // General Google Shopping Search
-            url = `https://www.google.com/search?q=${encodedName}+buy+online&tbm=shop`;
+        if (!url) {
+            const encodedName = encodeURIComponent(product.name);
+            if (product.store.name.toLowerCase().includes('zara')) {
+                url = `https://www.google.com/search?q=Zara+${encodedName}&tbm=shop`;
+            } else if (product.store.name.toLowerCase().includes('amazon')) {
+                url = `https://www.amazon.com/s?k=${encodedName}&tag=looksyapp-20`; // Real affiliate tag
+            } else {
+                url = `https://www.google.com/search?q=${encodedName}+buy+online&tbm=shop`;
+            }
         }
 
         // Open in new tab

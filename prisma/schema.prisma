@@ -143,6 +143,9 @@ model User {
 
   // Push Notifications
   pushSubscriptions PushSubscription[]
+
+  // Affiliate Monetization
+  affiliateClicks   AffiliateClick[]
 }
 
 model Subscription {
@@ -230,9 +233,11 @@ model StoreItem {
   imageUrl  String
   category  String
   inStock   Boolean    @default(true)
+  affiliateUrl String?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   wishlist  Wishlist[]
+  affiliateClicks AffiliateClick[]
 }
 
 model Scan {
@@ -628,4 +633,20 @@ model VTOJob {
   updatedAt       DateTime @updatedAt
 
   @@index([userId])
+}
+
+// ---------------------------------------------------------
+// MONETIZATION: Affiliate Program Conversion Clicks 💰
+// ---------------------------------------------------------
+
+model AffiliateClick {
+  id          String    @id @default(cuid())
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  storeItemId String
+  storeItem   StoreItem @relation(fields: [storeItemId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([storeItemId])
 }
