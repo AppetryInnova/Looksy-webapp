@@ -19,14 +19,10 @@ export async function GET() {
             return NextResponse.json(activeChallenges);
         }
 
-        // 3. Otherwise, generate new ones based on date context
-        // Generate new challenges via AI
+        // 3. Otherwise, generate new ones via AI
+        const newChallengesData = await generateChallenges();
 
-        const newChallengesData = await generateChallenges({
-            date: today.toISOString()
-        });
-
-        if (!newChallengesData.length) {
+        if (!newChallengesData || !newChallengesData.length) {
             // Fallback if AI fails
             return NextResponse.json(activeChallenges);
         }
@@ -47,7 +43,6 @@ export async function GET() {
                     badgeName: data.badgeName,
                     rules: JSON.stringify(data.rules || []),
                     generatedByAI: true,
-                    // Season is now implicit/not stored or we could extract it if needed, but for now we simplify
                     startDate: today,
                     endDate: endDate,
                 }

@@ -130,13 +130,13 @@ export default function SocialFeedModern({ feedType }: SocialFeedProps) {
             } else {
                 setScans(scansWithDetails);
             }
+            posthog.capture('feed_viewed', { feedType, count: scansWithDetails.length });
         } catch (err) {
             logger.error(err);
-            setError(t('loadingError') || tc('error')); // loadingError wasn't added yet, I'll use tc('error') for now or add it later. Actually I'll just use 'loadingError' and add it.
+            setError(t('loadingError') || tc('error'));
         } finally {
             setLoading(false);
             setLoadingMore(false);
-            posthog.capture('feed_viewed', { feedType, count: scansWithDetails?.length || 0 });
         }
 
     }, [session, feedType]);

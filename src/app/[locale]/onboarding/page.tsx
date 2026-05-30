@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { analyzeImage } from '@/lib/gemini';
+
 import { useLocale } from 'next-intl';
 import styles from './onboarding.module.css';
 import { logger } from '@/lib/logger';
@@ -109,7 +109,16 @@ export default function OnboardingPage() {
         try {
             const formData = new FormData();
             formData.append('image', file);
-            const result = await analyzeImage(formData, 'FACIAL_PROFILE', locale);
+            formData.append('mode', 'FACIAL_PROFILE');
+            formData.append('locale', locale);
+
+            // Call the secure server-side API endpoint
+            const res = await fetch('/api/analyze', { method: 'POST', body: formData });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Analysis failed');
+            }
+            const result = await res.json();
             setFacialProfile(result);
         } catch (error) {
             logger.error('Error during facial analysis:', error);

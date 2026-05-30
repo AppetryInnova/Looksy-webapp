@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { analyzeImage } from '@/lib/gemini';
 import { supabase } from '@/lib/supabase';
 import { useTranslations, useLocale } from 'next-intl';
 import GamificationModal from './GamificationModal';

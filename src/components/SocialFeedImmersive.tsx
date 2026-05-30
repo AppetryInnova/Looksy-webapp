@@ -74,11 +74,11 @@ export default function SocialFeedImmersive({ feedType }: SocialFeedProps) {
             } else {
                 setScans(enriched);
             }
+            posthog.capture('immersive_feed_viewed', { feedType, count: enriched.length });
         } catch (err) {
             logger.error(err);
         } finally {
             setLoading(false);
-            posthog.capture('immersive_feed_viewed', { feedType, count: enriched?.length || 0 });
         }
 
     }, [session, feedType]);

@@ -39,42 +39,6 @@ export default function ProfileEditModal({ user, isOpen, onClose, onUpdate }: Pr
             logger.error('Error updating profile:', error);
             alert('Error al actualizar el perfil');
         } finally {
-type ProfileEditModalProps = {
-    user: {
-        username: string | null;
-        avatarUrl: string | null;
-    };
-    isOpen: boolean;
-    onClose: () => void;
-    onUpdate: () => void;
-};
-
-export default function ProfileEditModal({ user, isOpen, onClose, onUpdate }: ProfileEditModalProps) {
-    const [username, setUsername] = useState(user.username || '');
-    const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
-    const [saving, setSaving] = useState(false);
-
-    if (!isOpen) return null;
-
-    const handleSave = async () => {
-        setSaving(true);
-        try {
-            const res = await fetch('/api/profile', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, avatarUrl })
-            });
-
-            if (res.ok) {
-                onUpdate();
-                onClose();
-            } else {
-                alert('Error al actualizar el perfil');
-            }
-        } catch (error) {
-            logger.error('Error updating profile:', error);
-            alert('Error al actualizar el perfil');
-        } finally {
             setSaving(false);
         }
     };

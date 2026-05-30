@@ -3,7 +3,7 @@ import logger from "./logger";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-export type AnalysisMode = 'OUTFIT' | 'BEAUTY' | 'COLOR' | 'WARDROBE';
+export type AnalysisMode = 'OUTFIT' | 'BEAUTY' | 'COLOR' | 'WARDROBE' | 'FACIAL_PROFILE' | 'MAKEUP' | 'HAIRSTYLE';
 
 // Models to try in order - each has independent quotas on the free tier
 const TEXT_MODELS = [
@@ -96,6 +96,43 @@ export async function analyzeImageCore(
     WARDROBE: `
       Identifica todas las prendas en la imagen. Clasifícalas y describe su estilo.
       Responde JSON: { "feedback": "Resumen de prendas", "harmonyScore": 0-100, "items": [{ "category": "string", "color": "string", "style": "string" }] }
+    `,
+    FACIAL_PROFILE: `
+      Eres un experto en visagismo y análisis facial de alta gama para Looksy.
+      Analiza la foto del rostro adjunta.
+      Responde en ${locale === 'es' ? 'Español' : 'English'} siguiendo estrictamente este formato JSON:
+      {
+        "faceShape": "Forma identificada (e.g. Ovalada, Diamante, Redonda, Cuadrada, Rectangular, Corazón)",
+        "skinTone": "Estación y subtono cromático (ej. Otoño Cálido, Primavera Clara)",
+        "eyebrows": "Recomendación específica para cejas",
+        "jawline": "Características de la mandíbula y pómulos"
+      }
+    `,
+    MAKEUP: `
+      Eres un experto en maquillaje profesional y visagismo de alta gama para Looksy.
+      Analiza la foto del rostro adjunta.
+      Perfil facial previo: ${facialProfile || 'No analizado'}.
+      Responde en ${locale === 'es' ? 'Español' : 'English'} siguiendo estrictamente este formato JSON:
+      {
+        "harmonyScore": 0-100,
+        "faceShape": "Forma identificada (Ovalada, Diamante, etc.)",
+        "colorPalette": "Subtono y estación cromática (ej. Otoño Cálido)",
+        "keyFeatures": ["mínimo 3 rasgos clave identificados, e.g. Cejas arqueadas, Pómulos altos, Ojos expresivos"],
+        "suggestions": ["mínimo 3 recomendaciones de maquillaje personalizadas y detalladas para elevar su estilo"]
+      }
+    `,
+    HAIRSTYLE: `
+      Eres un experto en estilismo de cabello y visagismo de alta gama para Looksy.
+      Analiza la foto del rostro adjunta.
+      Perfil facial previo: ${facialProfile || 'No analizado'}.
+      Responde en ${locale === 'es' ? 'Español' : 'English'} siguiendo estrictamente este formato JSON:
+      {
+        "harmonyScore": 0-100,
+        "faceShape": "Forma identificada (Ovalada, Diamante, etc.)",
+        "colorPalette": "Subtono y estación cromática o color ideal",
+        "keyFeatures": ["mínimo 3 rasgos clave identificados, e.g. Rostro alargado, Frente despejada, Ojos almendrados"],
+        "suggestions": ["mínimo 3 recomendaciones de peinado y corte personalizadas y detalladas según su estructura facial"]
+      }
     `
   };
 
@@ -103,7 +140,7 @@ export async function analyzeImageCore(
     return await runWithModelFallback(TEXT_MODELS, async (modelName) => {
       const model = genAI.getGenerativeModel({
         model: modelName,
-        generationConfig: { response_mime_type: "application/json" }
+        generationConfig: { responseMimeType: "application/json" }
       });
 
       const result = await model.generateContent([

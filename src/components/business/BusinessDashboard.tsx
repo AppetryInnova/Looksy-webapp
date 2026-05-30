@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import posthog from 'posthog-js';
 import { motion } from 'framer-motion';
-import { FaChartBar, FaUsers, FaMegaphone, FaStore, FaMagic, FaArrowRight, FaBullhorn, FaPlus } from 'react-icons/fa';
+import { FaChartBar, FaUsers, FaStore, FaMagic, FaArrowRight, FaBullhorn, FaPlus } from 'react-icons/fa';
 
 interface DashboardStore {
     name: string;

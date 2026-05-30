@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { analyzeImage } from '@/lib/gemini';
+
 import { useLocale } from 'next-intl';
 import { logger } from '@/lib/logger';
 
@@ -61,16 +61,21 @@ const BeautyAnalysis = () => {
         try {
             const formData = new FormData();
             formData.append('image', file);
+            formData.append('mode', beautyMode);
+            formData.append('locale', locale);
 
-            // If we have a stored facial profile, we add it to the request for Gemini
+            // If we have a stored facial profile, pass it as context for Gemini
             if (userProfile?.facialProfile) {
-                formData.append('facialProfile', JSON.stringify(userProfile.facialProfile)); // Stringify if it's an object
+                formData.append('facialProfile', JSON.stringify(userProfile.facialProfile));
             }
 
-            // We specifically ask for HAIRSTYLE/MAKEUP blend or specialized beauty
-            // For now, let's use a specialized mode if we had one, but we'll use 'MAKEUP' 
-            // and the server will use the facialProfile context.
-            const result = await analyzeImage(formData, beautyMode, locale);
+            // Call the secure server-side API endpoint
+            const res = await fetch('/api/analyze', { method: 'POST', body: formData });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Analysis failed');
+            }
+            const result = await res.json();
             setResults(result);
             setStep(4);
 

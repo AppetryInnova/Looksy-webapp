@@ -14,62 +14,58 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { biometricData } = body; // Base64 string
+        const { biometricData } = body; // Base64 data URI string
 
         if (!biometricData) {
             return NextResponse.json({ error: 'No biometric data provided' }, { status: 400 });
         }
 
-        // Convert Base64 to Buffer/Blob for Gemini
-        // Data URL format: "data:image/jpeg;base64,/9j/4AAQSkZJRg..."
+        // Extract raw base64 from the data URI (e.g. "data:image/jpeg;base64,/9j/4AA...")
         const base64Data = biometricData.split(';base64,').pop();
-        const buffer = Buffer.from(base64Data, 'base64');
-
-        // Create a Mock File object compatible with analyzeImage
-        const file = {
-            arrayBuffer: async () => buffer,
-            type: 'image/jpeg'
-        } as unknown as File;
-
-        const formData = new FormData();
-        formData.append('image', file);
-        formData.append('facialProfile', 'Verify this is a real human face and analyzing features for ID.');
-
-        // Call Gemini for real analysis
-        // This will THROW if it fails or if the image is not valid/flagged
-        const analysis = await import('@/lib/gemini').then(m => m.analyzeImage(formData, 'FACIAL_PROFILE'));
-
-        if (!analysis || !analysis.faceShape) {
-            return NextResponse.json({ error: 'Verification failed: Face not clearly detected.' }, { status: 422 });
+        if (!base64Data) {
+            return NextResponse.json({ error: 'Invalid biometric data format' }, { status: 400 });
         }
 
-        // Generate a deterministic hash based on the AI's analysis of features (Simulated "FaceID")
-        // In a real high-security app, we'd use vector embeddings. 
-        // Here we hash the classified features to ensure basic uniqueness/consistency check.
-        const featureString = `${analysis.faceShape}-${analysis.skinTone}-${JSON.stringify(analysis.colorPalette)}`;
+        // Run AI facial profile analysis on the server side (dynamic import keeps it server-only)
+        const { analyzeImageCore } = await import('@/lib/gemini');
+        const analysis = await analyzeImageCore(base64Data, 'image/jpeg', 'FACIAL_PROFILE');
 
-        // Simple hash function for demo
+        if (!analysis?.faceShape) {
+            return NextResponse.json(
+                { error: 'Could not detect facial features. Please use a clearer, well-lit photo.' },
+                { status: 422 }
+            );
+        }
+
+        // Build a feature string from the AI analysis results and hash it for uniqueness checks.
+        // In a production system you would use proper face embedding vectors.
+        const featureString = `${analysis.faceShape}-${analysis.skinTone}-${JSON.stringify(analysis.colorPalette || '')}`;
+
+        // Simple but deterministic hash function
         let hash = 0;
         for (let i = 0; i < featureString.length; i++) {
             const char = featureString.charCodeAt(i);
             hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
+            hash = hash & hash; // Convert to 32-bit integer
         }
         const biometricHash = 'bio_v1_' + Math.abs(hash).toString(16);
 
-        // Check uniqueness (Real one-account policy enforcement)
+        // Check uniqueness — enforce one-account policy
         const existingUser = await prisma.user.findFirst({
             where: {
                 biometricHash: biometricHash,
-                NOT: { email: session.user.email } // Exclude self
+                NOT: { email: session.user.email } // Exclude the current user
             }
         });
 
         if (existingUser) {
-            return NextResponse.json({ error: 'Identity validation failed: This face is associated with another account.' }, { status: 409 });
+            return NextResponse.json(
+                { error: 'Identity validation failed: This face is associated with another account.' },
+                { status: 409 }
+            );
         }
 
-        // Logic to verify user
+        // Mark user as verified and award the "Verified Model" badge
         const updatedUser = await prisma.user.update({
             where: { email: session.user.email },
             data: {
@@ -77,7 +73,6 @@ export async function POST(request: Request) {
                 verificationLevel: 'BIOMETRIC',
                 verifiedAt: new Date(),
                 biometricHash: biometricHash,
-                // Award "Verified Model" badge if not exists
                 badges: {
                     connectOrCreate: {
                         where: { name: 'Verified Model' },
