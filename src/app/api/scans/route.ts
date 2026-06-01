@@ -5,16 +5,35 @@ import { authOptions } from '@/lib/auth';
 import { checkAndAwardBadges } from '@/lib/badges';
 import logger from '@/lib/logger';
 import { inngest } from '@/lib/inngest';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session || !session.user?.email) {
+        let userId = session?.user?.id;
+
+        // Mobile clients using Supabase Bearer token
+        if (!userId) {
+            const authHeader = request.headers.get('authorization');
+            if (authHeader?.startsWith('Bearer ')) {
+                const token = authHeader.substring(7);
+                try {
+                    const { data: { user: sbUser }, error } = await supabase.auth.getUser(token);
+                    if (sbUser && !error) {
+                        userId = sbUser.id;
+                    }
+                } catch (err) {
+                    logger.error('Error verifying Supabase token in scans:', err);
+                }
+            }
+        }
+
+        if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
+            where: { id: userId },
             include: { subscription: true }
         });
 
