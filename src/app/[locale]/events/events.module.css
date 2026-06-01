@@ -1,37 +1,35 @@
 .container {
     width: 100%;
     min-height: 100vh;
-    padding: 20px 16px 90px;
+    padding: 24px 16px 120px;
     max-width: 800px;
     margin: 0 auto;
     box-sizing: border-box;
+    position: relative;
 }
 
 .header {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .title {
-    font-size: clamp(1.4rem, 6vw, 2rem);
-    color: var(--color-accent);
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(1.8rem, 6vw, 2.5rem);
+    letter-spacing: -0.04em;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .eventsGrid {
     display: grid;
-    gap: 20px;
-}
-
-.eventCard {
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.eventTitle {
-    color: var(--color-primary);
-    margin-bottom: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
 }
 
 .modalOverlay {
@@ -40,48 +38,237 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1200;
+    padding: 16px;
+    overflow-y: auto;
 }
 
 .modalContent {
-    width: 90%;
-    max-width: 500px;
+    width: 100%;
+    max-width: 560px;
+    background: var(--glass-elevated);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(32px) saturate(200%);
+    -webkit-backdrop-filter: blur(32px) saturate(200%);
+    border-radius: 32px;
+    box-shadow: var(--shadow-premium);
+    padding: 32px 24px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    animation: zoomIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modalTitle {
-    margin-bottom: 20px;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+    color: white;
+    margin: 0;
 }
 
-.form {
+/* --- Wizard Step Indicator --- */
+.stepIndicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 8px;
+    padding: 0 10px;
+}
+
+.stepDot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 800;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 5;
+    cursor: default;
+}
+
+.stepDotActive {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: #10b981;
+    color: #10b981;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+}
+
+.stepDotCompleted {
+    background: #10b981;
+    border-color: #10b981;
+    color: black;
+}
+
+.stepLine {
+    flex: 1;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 0 -4px;
+    position: relative;
+    z-index: 1;
+    transition: background 0.3s ease;
+}
+
+.stepLineActive {
+    background: #10b981;
+}
+
+/* --- Form Fields --- */
+.formSection {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
-.input {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
+.label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.input, .textarea, .select {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    color: white;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+}
+
+.input:focus, .textarea:focus, .select:focus {
+    border-color: rgba(16, 185, 129, 0.6);
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+}
+
+.select option {
+    background: #1a1a1a;
+    color: white;
+}
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.checkboxLabel:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.checkboxLabel input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    border-radius: 6px;
+    accent-color: #10b981;
+    cursor: pointer;
+}
+
+.checkboxLabel span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+/* --- Preview Banner --- */
+.previewBanner {
+    width: 100%;
+    height: 140px;
+    border-radius: 20px;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.previewPlaceholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* --- Button Group --- */
 .buttonGroup {
     display: flex;
-    gap: 10px;
-    margin-top: 10px;
+    gap: 12px;
+    margin-top: 12px;
 }
 
-.createButton {
+.navBtn {
     flex: 1;
+    padding: 14px 20px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-sizing: border-box;
 }
 
-.cancelButton {
-    padding: 12px;
-    border-radius: 50px;
-    border: 1px solid #ddd;
-    background: white;
-    cursor: pointer;
+.navBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }

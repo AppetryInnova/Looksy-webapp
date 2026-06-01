@@ -89,16 +89,36 @@ export async function POST(request: Request) {
             });
 
             // 2. Dispatch Inngest Event
-            await inngest.send({
-                name: "scan/created",
-                data: {
-                    scanId: scan.id,
-                    mode: mode || 'OUTFIT',
-                    locale: locale || 'en',
-                    location: location || '',
-                    facialProfile: facialProfile || '',
-                },
-            });
+            try {
+                await inngest.send({
+                    name: "scan/created",
+                    data: {
+                        scanId: scan.id,
+                        mode: mode || 'OUTFIT',
+                        locale: locale || 'en',
+                        location: location || '',
+                        facialProfile: facialProfile || '',
+                    },
+                });
+            } catch (inngestErr) {
+                logger.warn("Inngest send failed in scans, running local background fallback:", inngestErr);
+                
+                // Run the scan analysis asynchronously using setTimeout so we don't block the API response
+                setTimeout(async () => {
+                    try {
+                        const { processScanLocally } = await import('@/lib/scan-local');
+                        await processScanLocally(
+                            scan.id,
+                            mode || 'OUTFIT',
+                            locale || 'es',
+                            location || '',
+                            facialProfile || ''
+                        );
+                    } catch (err) {
+                        logger.error(`Local scan fallback processing failed for scan ${scan.id}:`, err);
+                    }
+                }, 100);
+            }
 
             return NextResponse.json({
                 scan,

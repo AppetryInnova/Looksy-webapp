@@ -6,10 +6,29 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET() {
     try {
+        const session = await getServerSession(authOptions);
+        const userEmail = session?.user?.email;
+
+        let user = null;
+        if (userEmail) {
+            user = await prisma.user.findUnique({
+                where: { email: userEmail }
+            });
+        }
+
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+
         const events = await prisma.event.findMany({
             where: {
-                date: { gte: new Date() },
-                visibility: 'PUBLIC'
+                date: { gte: startOfToday },
+                OR: [
+                    { visibility: 'PUBLIC' },
+                    ...(user ? [
+                        { creatorId: user.id },
+                        { attendees: { some: { userId: user.id } } }
+                    ] : [])
+                ]
             },
             orderBy: { date: 'asc' },
             include: {

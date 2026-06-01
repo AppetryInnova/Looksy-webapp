@@ -116,7 +116,9 @@ body {
   --color-surface: hsl(var(--background));
   --color-surface-hover: hsl(var(--p-slate-100));
   --color-text: hsl(var(--foreground));
-  --color-text-dim: hsl(var(--foreground) / 0.55);
+  --color-text-dim: hsl(var(--foreground) / 0.68);
+  --glass-surface: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(16, 185, 129, 0.12);
   --glass-bg: var(--glass-surface);
   --glass-blur: blur(24px) saturate(180%);
   --shadow-md: var(--shadow-md);
@@ -125,10 +127,19 @@ body {
 }
 
 [data-theme='dark'] {
-  --color-surface: hsl(var(--p-slate-800));
+  --color-surface: hsl(var(--p-slate-900));
   --color-surface-hover: hsl(var(--p-slate-800));
-  --glass-surface: rgba(15, 17, 20, 0.75);
-  --glass-elevated: rgba(22, 25, 30, 0.9);
+  --glass-surface: rgba(15, 17, 20, 0.78);
+  --glass-border: rgba(16, 185, 129, 0.2);
+  --glass-elevated: rgba(22, 25, 30, 0.92);
+  --color-text-dim: hsl(var(--foreground) / 0.72);
+}
+
+/* Responsividad de Relleno Inferior para Barra de Navegación */
+@media (max-width: 1024px) {
+  .has-bottom-nav {
+    padding-bottom: 110px !important;
+  }
 }
 
 /* === Global Button System === */

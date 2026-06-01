@@ -36,6 +36,8 @@ type UserProfile = {
     subscription?: { plan: string; status: string } | null;
     createdAt?: Date | string;
     isInfluencer?: boolean;
+    baseModelUrl?: string | null;
+    twinBackground?: string | null;
 };
 
 
@@ -368,7 +370,19 @@ export default function ProfilePage() {
 
                 {/* Digital Twin Setup */}
                 <div style={{ gridColumn: 'span 12', marginTop: '16px', marginBottom: '16px' }}>
-                    <DigitalTwinOnboarding />
+                    <DigitalTwinOnboarding 
+                        initialBaseModelUrl={user.baseModelUrl}
+                        initialTwinBackground={user.twinBackground}
+                        onComplete={async () => {
+                            fetch('/api/profile')
+                                .then((res) => {
+                                    if (res.ok) return res.json();
+                                    throw new Error('Failed to fetch profile');
+                                })
+                                .then((data) => setUser(data))
+                                .catch(err => logger.error('Error fetching profile after twin update:', err));
+                        }}
+                    />
                 </div>
 
                 {/* Stats - Small Cards */}

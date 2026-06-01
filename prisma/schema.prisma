@@ -85,6 +85,7 @@ model User {
   budgetRange       String? // JSON: { min: 0, max: 500 }
   // Virtual Try-On (Digital Twin)
   baseModelUrl      String?
+  twinBackground    String?
   bodyMeasurements  String? // JSON: { height: 170, weight: 65, bodyType: "athletic" }
   gravityTokens     Int      @default(5)
   lastTokenReset    DateTime?
@@ -190,6 +191,7 @@ model Item {
   category  String
   color     String?
   brand     String?
+  name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   

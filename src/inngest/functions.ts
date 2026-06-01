@@ -108,7 +108,55 @@ export const generateVTOJob = inngest.createFunction(
       let finalUrl = null;
       let aiReport = null;
 
-      if (!REPLICATE_API_TOKEN) {
+      let replicateFailed = false;
+
+      if (REPLICATE_API_TOKEN) {
+          try {
+              // Replicate Premium
+              finalUrl = await step.run("generate-replicate", async () => {
+                  const response = await fetch("https://api.replicate.com/v1/predictions", {
+                      method: "POST",
+                      headers: {
+                          "Authorization": `Token ${REPLICATE_API_TOKEN}`,
+                          "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                          version: "03b751de61d974044132e1673a359c20e1a4645228549cf06296799049386c91",
+                          input: {
+                              garm_img: job.garmentImageUrl,
+                              human_img: job.baseModelUrl,
+                              garment_des: "fashion item",
+                              category: job.category 
+                          },
+                      }),
+                  });
+
+                  if (!response.ok) throw new Error(`Replicate API error: ${response.statusText}`);
+                  let prediction = await response.json();
+                  
+                  let retries = 0;
+                  while ((prediction.status !== "succeeded" && prediction.status !== "failed" && prediction.status !== "canceled") && retries < 30) {
+                      await new Promise(resolve => setTimeout(resolve, 2000));
+                      const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+                          headers: { "Authorization": `Token ${REPLICATE_API_TOKEN}` },
+                      });
+                      prediction = await pollRes.json();
+                      retries++;
+                  }
+
+                  if (prediction.status === "succeeded") {
+                      return Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+                  } else {
+                      throw new Error(`Generation failed: ${prediction.status}`);
+                  }
+              });
+          } catch (replicateErr: any) {
+              logger.warn(`Replicate VTO failed for job ${jobId}, falling back to Gemini Nano Banana: ${replicateErr.message}`);
+              replicateFailed = true;
+          }
+      }
+
+      if (!REPLICATE_API_TOKEN || replicateFailed) {
           // Nano Banana (Gemini)
           const [userBase64, garmentBase64] = await step.run("fetch-images", async () => {
               return await Promise.all([
@@ -127,45 +175,6 @@ export const generateVTOJob = inngest.createFunction(
           
           aiReport = results.report;
           finalUrl = results.url || job.baseModelUrl;
-      } else {
-          // Replicate Premium
-          finalUrl = await step.run("generate-replicate", async () => {
-              const response = await fetch("https://api.replicate.com/v1/predictions", {
-                  method: "POST",
-                  headers: {
-                      "Authorization": `Token ${REPLICATE_API_TOKEN}`,
-                      "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                      version: "03b751de61d974044132e1673a359c20e1a4645228549cf06296799049386c91",
-                      input: {
-                          garm_img: job.garmentImageUrl,
-                          human_img: job.baseModelUrl,
-                          garment_des: "fashion item",
-                          category: job.category 
-                      },
-                  }),
-              });
-
-              if (!response.ok) throw new Error("Replicate API error");
-              let prediction = await response.json();
-              
-              let retries = 0;
-              while ((prediction.status !== "succeeded" && prediction.status !== "failed" && prediction.status !== "canceled") && retries < 30) {
-                  await new Promise(resolve => setTimeout(resolve, 2000));
-                  const pollRes = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
-                      headers: { "Authorization": `Token ${REPLICATE_API_TOKEN}` },
-                  });
-                  prediction = await pollRes.json();
-                  retries++;
-              }
-
-              if (prediction.status === "succeeded") {
-                  return Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
-              } else {
-                  throw new Error(`Generation failed: ${prediction.status}`);
-              }
-          });
       }
 
       await step.run("mark-completed", async () => {

@@ -53,11 +53,15 @@ export default function ConditionalLayout({ children }: { children: React.ReactN
             <div style={{
                 position: isHomePage ? 'absolute' : 'fixed',
                 bottom: 0,
-                width: '100%',
-                zIndex: 50,
-                background: isHomePage ? 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' : 'var(--color-surface)'
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                pointerEvents: 'none',
+                background: isHomePage ? 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' : 'transparent'
             }}>
-                <BottomNav />
+                <div style={{ pointerEvents: 'auto', width: '100%', display: 'flex', justifyContent: 'center' }}>
+                    <BottomNav />
+                </div>
             </div>
         </div>
     );

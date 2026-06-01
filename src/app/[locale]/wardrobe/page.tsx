@@ -28,6 +28,7 @@ export default function WardrobePage() {
     const [showStarterModal, setShowStarterModal] = useState(false);
     const [showOutfitGenerator, setShowOutfitGenerator] = useState(false);
     const [filter, setFilter] = useState('ALL');
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const t = useTranslations('WardrobePage');
 
     const fetchItems = () => {
@@ -85,7 +86,7 @@ export default function WardrobePage() {
 
             {/* Controls Bar */}
             <div className={styles.controlsBar}>
-                {/* Filter Tabs */}
+                {/* Filter Tabs (Desktop) */}
                 <div className={`${styles.filterScroll} no-scrollbar`}>
                     {categories.map(cat => (
                         <button
@@ -97,6 +98,45 @@ export default function WardrobePage() {
                             <span>{cat.label}</span>
                         </button>
                     ))}
+                </div>
+
+                {/* Mobile Dropdown Filter */}
+                <div className={styles.mobileDropdownContainer}>
+                    <button 
+                        onClick={() => setDropdownOpen(!dropdownOpen)} 
+                        className={styles.dropdownButton}
+                    >
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>{categories.find(c => c.id === filter)?.icon}</span>
+                            <span style={{ fontWeight: 800 }}>{categories.find(c => c.id === filter)?.label}</span>
+                        </span>
+                        <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>{dropdownOpen ? '▲' : '▼'}</span>
+                    </button>
+                    
+                    {dropdownOpen && (
+                        <>
+                            <div 
+                                onClick={() => setDropdownOpen(false)}
+                                style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'transparent' }} 
+                            />
+                            <div className={`glass-premium ${styles.dropdownMenu}`}>
+                                {categories.map(cat => (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => {
+                                            setFilter(cat.id);
+                                            setDropdownOpen(false);
+                                        }}
+                                        className={`${styles.dropdownItem} ${filter === cat.id ? styles.dropdownItemActive : ''}`}
+                                    >
+                                        <span style={{ fontSize: '1.1rem' }}>{cat.icon}</span>
+                                        <span>{cat.label}</span>
+                                        {filter === cat.id && <span style={{ marginLeft: 'auto', color: 'var(--color-primary)', fontWeight: 'bold' }}>✓</span>}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <div className={styles.actionsGroup}>

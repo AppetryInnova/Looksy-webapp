@@ -92,10 +92,24 @@ export async function POST(req: Request) {
         });
 
         // Dispatch background processing to Inngest
-        await inngest.send({
-            name: "vto/generate",
-            data: { jobId: job.id }
-        });
+        try {
+            await inngest.send({
+                name: "vto/generate",
+                data: { jobId: job.id }
+            });
+        } catch (inngestErr) {
+            logger.warn("Inngest send failed in VTO, running local background fallback:", inngestErr);
+            
+            // Run the VTO processing asynchronously using setTimeout so we don't block the API response
+            setTimeout(async () => {
+                try {
+                    const { processVtoJobLocally } = await import('@/lib/vto-local');
+                    await processVtoJobLocally(job.id);
+                } catch (err) {
+                    logger.error(`Local VTO fallback processing failed for job ${job.id}:`, err);
+                }
+            }, 100);
+        }
 
         // Immediately return the jobId so the frontend can subscribe via Realtime
         return NextResponse.json({ 

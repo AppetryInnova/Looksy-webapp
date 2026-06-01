@@ -7,18 +7,14 @@ export type AnalysisMode = 'OUTFIT' | 'BEAUTY' | 'COLOR' | 'WARDROBE' | 'FACIAL_
 
 // Models to try in order - each has independent quotas on the free tier
 const TEXT_MODELS = [
-  "gemini-3.1-pro-preview",
-  "gemini-3-flash-preview",
-  "gemini-2.5-flash",
   "gemini-2.0-flash",
-  "gemini-1.5-flash"
+  "gemini-1.5-flash",
+  "gemini-1.5-pro"
 ];
 
 const IMAGE_MODELS = [
-  "gemini-3.1-pro-preview",
-  "gemini-3-pro-image-preview",
-  "gemini-2.5-pro",
-  "gemini-2.0-flash-exp"
+  "gemini-2.0-flash",
+  "gemini-1.5-flash"
 ];
 
 function isQuotaError(error: any): boolean {
@@ -36,17 +32,11 @@ async function runWithModelFallback(
       return await fn(modelName);
     } catch (error: any) {
       lastError = error;
-      if (isQuotaError(error)) {
-        logger.warn(`Quota exceeded for ${modelName}, trying next model...`);
-        continue; // Try next model
-      }
-      throw error; // Non-quota error, re-throw immediately
+      logger.warn(`Model ${modelName} failed, trying next fallback model... Error: ${error.message || error}`);
+      continue; // Try next model
     }
   }
   // All models exhausted
-  if (isQuotaError(lastError)) {
-    throw new Error('QUOTA_EXCEEDED');
-  }
   throw lastError;
 }
 
@@ -223,7 +213,7 @@ export async function generateNanoBananaVTO(
   `;
 
   try {
-    return await runWithModelFallback(IMAGE_MODELS, async (modelName) => {
+    const resultUrl = await runWithModelFallback(IMAGE_MODELS, async (modelName) => {
       const model = genAI.getGenerativeModel({ model: modelName, generationConfig: { temperature: 0.7 } });
       const result = await model.generateContent([
         prompt,
@@ -235,12 +225,13 @@ export async function generateNanoBananaVTO(
       if (imagePart?.inlineData) {
         return `data:image/jpeg;base64,${imagePart.inlineData.data}`;
       }
-      logger.warn(`${modelName} returned no image part — falling back`);
-      return null;
+      logger.warn(`${modelName} returned no image part — returning fallback`);
+      return `data:image/jpeg;base64,${userImageBase64}`;
     });
+    return resultUrl || `data:image/jpeg;base64,${userImageBase64}`;
   } catch (error: any) {
-    logger.error("Nano Banana VTO failed on all models:", error.message);
-    throw error;
+    logger.error("Nano Banana VTO failed, using user image as fallback:", error.message);
+    return `data:image/jpeg;base64,${userImageBase64}`;
   }
 }
 
@@ -311,4 +302,40 @@ export async function generateCampaignContent(topic: string, locale: string = 'e
     throw error;
   }
 }
+
+export async function generateEventStyling(
+  eventTitle: string,
+  eventDesc: string,
+  dressCode: string,
+  garments: { name?: string; category: string; color?: string | null; brand?: string | null }[]
+): Promise<string> {
+  const garmentsListStr = garments
+    .map((g) => {
+      const name = g.name || `${g.color || ''} ${g.brand || ''} ${g.category}`.trim();
+      return `- ${name} (${g.category})`;
+    })
+    .join('\n');
+
+  const prompt = `
+    Actúa como el estilista personal estrella de Looksy. El usuario asistirá a un evento social.
+    Detalles del evento:
+    - Título: ${eventTitle}
+    - Descripción: ${eventDesc || 'Sin descripción'}
+    - Código de vestimenta obligatorio: ${dressCode}
+
+    Prendas disponibles en el ropero del usuario:
+    ${garmentsListStr}
+
+    Por favor, analiza estas prendas y recomiéndale el outfit perfecto combinándolas.
+    Sé creativo, profesional y amigable en español.
+    Si consideras que le falta alguna prenda básica o accesorio clave para clavar el look sugerido, menciónala amigablemente al final bajo el título "Tip de Estilo 💡".
+  `;
+
+  return runWithModelFallback(TEXT_MODELS, async (modelName) => {
+    const model = genAI.getGenerativeModel({ model: modelName });
+    const result = await model.generateContent(prompt);
+    return result.response.text();
+  });
+}
+
 

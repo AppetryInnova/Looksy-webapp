@@ -45,6 +45,25 @@ export default function ShopMap() {
     const [searchRadius, setSearchRadius] = useState(10); // Default 10km
     const DEFAULT_CENTER: [number, number] = [-34.6037, -58.3816];
 
+    const fetchIPLocation = async () => {
+        try {
+            logger.info("Attempting IP-based geolocation fallback...");
+            const res = await fetch('https://ipapi.co/json/');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.latitude && data.longitude) {
+                    logger.info(`IP Geolocation successful: Lat=${data.latitude}, Lng=${data.longitude}`);
+                    updateLocation(data.latitude, data.longitude);
+                    return;
+                }
+            }
+        } catch (ipErr) {
+            logger.error("IP geolocation fallback failed:", ipErr);
+        }
+        // Final fallback
+        updateLocation(DEFAULT_CENTER[0], DEFAULT_CENTER[1]);
+    };
+
     useEffect(() => {
         setLoading(true);
         // Try Geolocation on mount
@@ -55,13 +74,14 @@ export default function ShopMap() {
                     updateLocation(latitude, longitude);
                 },
                 (error) => {
-                    logger.warn("Geolocation denied or error:", error);
-                    updateLocation(DEFAULT_CENTER[0], DEFAULT_CENTER[1]);
+                    logger.warn("Geolocation denied or error, falling back to IP:", error);
+                    fetchIPLocation();
                 },
-                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+                { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 } // Changed highAccuracy to false for better mobile response and increased timeout
             );
         } else {
-            updateLocation(DEFAULT_CENTER[0], DEFAULT_CENTER[1]);
+            logger.warn("Geolocation not supported by browser, falling back to IP");
+            fetchIPLocation();
         }
     }, []);
 

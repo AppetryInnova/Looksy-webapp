@@ -9,6 +9,14 @@ import { supabase } from '@/lib/supabase';
 import styles from './VirtualTryOnModal.module.css';
 import GetTokensModal from './GetTokensModal';
 
+const BACKGROUNDS = [
+    { name: 'Gris', label: 'Gris Estudio 🌫️', value: 'linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%)' },
+    { name: 'Rosa', label: 'Rosa Suave 🌸', value: 'linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%)' },
+    { name: 'Menta', label: 'Menta Fresca 🌿', value: 'linear-gradient(135deg, #ecfdf5 0%, #a7f3d0 100%)' },
+    { name: 'Carbón', label: 'Carbón Premium 🖤', value: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' },
+    { name: 'Estudio', label: 'Estudio Fotográfico 📸', value: 'radial-gradient(circle, #f8fafc 0%, #e2e8f0 100%)' },
+];
+
 type Item = { id: string; imageUrl: string; category: string; color?: string | null; brand?: string | null; };
 
 interface VirtualTryOnModalProps {
@@ -27,6 +35,7 @@ export default function VirtualTryOnModal({ isOpen, onClose, initialItem }: Virt
     const [showGetTokensModal, setShowGetTokensModal] = useState(false);
 
     const [baseModelUrl, setBaseModelUrl] = useState<string | null>(null);
+    const [selectedBg, setSelectedBg] = useState(BACKGROUNDS[0].value);
     const [loadingProfile, setLoadingProfile] = useState(true);
     
     const [wardrobe, setWardrobe] = useState<Item[]>([]);
@@ -52,12 +61,31 @@ export default function VirtualTryOnModal({ isOpen, onClose, initialItem }: Virt
             ])
             .then(([profileData, itemsData]) => {
                 setBaseModelUrl(profileData.baseModelUrl || null);
+                if (profileData.twinBackground) {
+                    const matchedBg = BACKGROUNDS.find(bg => bg.name === profileData.twinBackground);
+                    if (matchedBg) {
+                        setSelectedBg(matchedBg.value);
+                    }
+                }
                 setWardrobe(Array.isArray(itemsData) ? itemsData : []);
                 setLoadingProfile(false);
             })
             .catch(() => setLoadingProfile(false));
         }
     }, [isOpen, session, initialItem]);
+
+    const handleBgChange = async (bg: typeof BACKGROUNDS[0]) => {
+        setSelectedBg(bg.value);
+        try {
+            await fetch('/api/profile/twin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ twinBackground: bg.name })
+            });
+        } catch (err) {
+            console.error('Failed to update twinBackground from Try-On modal:', err);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -201,7 +229,8 @@ export default function VirtualTryOnModal({ isOpen, onClose, initialItem }: Virt
                                             <div style={{ 
                                                 width: '280px', height: '380px', borderRadius: '40px', overflow: 'hidden', 
                                                 border: '2px solid rgba(255,255,255,0.1)', boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
-                                                background: 'rgba(0,0,0,0.4)'
+                                                background: selectedBg,
+                                                transition: 'background 0.3s ease'
                                             }}>
                                                 <img src={baseModelUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             </div>
@@ -221,6 +250,33 @@ export default function VirtualTryOnModal({ isOpen, onClose, initialItem }: Virt
                                                 </motion.div>
                                             ))}
                                         </div>
+
+                                        {/* Background Selection */}
+                                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--color-text-dim)', fontWeight: 600 }}>FONDO:</span>
+                                            {BACKGROUNDS.map((bg) => {
+                                                const isSelected = selectedBg === bg.value;
+                                                return (
+                                                    <button
+                                                        key={bg.name}
+                                                        onClick={() => handleBgChange(bg)}
+                                                        title={bg.label}
+                                                        style={{
+                                                            width: '26px',
+                                                            height: '26px',
+                                                            borderRadius: '50%',
+                                                            background: bg.value,
+                                                            border: isSelected ? '2px solid var(--primary)' : '2px solid rgba(255,255,255,0.2)',
+                                                            boxShadow: isSelected ? '0 0 10px var(--primary)' : 'none',
+                                                            cursor: 'pointer',
+                                                            padding: 0,
+                                                            transition: 'all 0.2s',
+                                                        }}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
                                             <button className="btn-luxury" onClick={handleTryOn} disabled={generating || selectedArray.length === 0} style={{ width: '340px', padding: '22px', borderRadius: '22px' }}>
                                                 {generating ? 'IA Generando Imagen...' : <span><FaMagic /> Generar con Nano Banana</span>}
@@ -229,7 +285,13 @@ export default function VirtualTryOnModal({ isOpen, onClose, initialItem }: Virt
                                     </motion.div>
                                 ) : (
                                     <motion.div key="result" initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <div style={{ position: 'relative', width: '380px', height: '520px', borderRadius: '40px', overflow: 'hidden', border: '4px solid var(--primary)', boxShadow: '0 0 100px rgba(16,185,129,0.3)' }}>
+                                        <div style={{ 
+                                            position: 'relative', width: '380px', height: '520px', borderRadius: '40px', 
+                                            overflow: 'hidden', border: '4px solid var(--primary)', 
+                                            boxShadow: '0 0 100px rgba(16,185,129,0.3)',
+                                            background: selectedBg,
+                                            transition: 'background 0.3s ease'
+                                        }}>
                                             <img src={resultImage || baseModelUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             {generating && (
                                                 <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

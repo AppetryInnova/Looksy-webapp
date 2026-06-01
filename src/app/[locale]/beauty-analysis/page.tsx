@@ -173,10 +173,16 @@ const BeautyAnalysis = () => {
                             </button>
                         </div>
 
-                        <label className="btn-primary" style={{ cursor: 'pointer', display: 'inline-block', padding: '16px 40px', fontSize: '1.1rem', borderRadius: '20px' }}>
-                            Subir Foto Facial
-                            <input type="file" accept="image/*" hidden onChange={handleUpload} />
-                        </label>
+                        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '24px' }}>
+                            <label className="btn-primary" style={{ cursor: 'pointer', padding: '16px 32px', fontSize: '1rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                📸 Tomar Selfie (Cámara)
+                                <input type="file" accept="image/*" capture="user" hidden onChange={handleUpload} />
+                            </label>
+                            <label className="btn-secondary" style={{ cursor: 'pointer', padding: '16px 32px', fontSize: '1rem', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}>
+                                🖼️ Subir de Galería
+                                <input type="file" accept="image/*" hidden onChange={handleUpload} />
+                            </label>
+                        </div>
 
                         <div style={{ marginTop: '32px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '12px' }}>
                             <div style={{ padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', fontSize: '0.85rem' }}>💡 Iluminación Natural</div>

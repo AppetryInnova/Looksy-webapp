@@ -108,7 +108,7 @@ const Sidebar = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) 
                     justifyContent: 'space-between',
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <img src="/logo.png" alt="Looksy" style={{ height: '36px', objectFit: 'contain' }} />
+                        <img src="/logo.png" alt="Looksy" style={{ height: '36px', width: '36px', borderRadius: '8px', objectFit: 'cover' }} />
                         <div>
                             <div style={{
                                 fontFamily: 'var(--font-display)',

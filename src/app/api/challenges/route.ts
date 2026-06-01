@@ -20,10 +20,44 @@ export async function GET() {
         }
 
         // 3. Otherwise, generate new ones via AI
-        const newChallengesData = await generateChallenges();
+        let newChallengesData;
+        try {
+            newChallengesData = await generateChallenges();
+        } catch (aiErr: any) {
+            logger.warn("AI Challenges generation failed, using default challenges:", aiErr.message);
+            newChallengesData = [
+                {
+                    title: "Monocromático Chic 🖤",
+                    description: "Vístete usando prendas de un solo color con diferentes texturas.",
+                    difficulty: "EASY",
+                    category: "STYLE",
+                    xp: 150,
+                    badgeName: "Monocromo",
+                    rules: ["Todas las prendas principales del mismo color", "Accesorios permitidos de otro tono neutro"]
+                },
+                {
+                    title: "Estampado Mix & Match 🎨",
+                    description: "Combina dos estampados diferentes (ej. rayas y flores) con total confianza.",
+                    difficulty: "MEDIUM",
+                    category: "CREATIVITY",
+                    xp: 250,
+                    badgeName: "Mix Master",
+                    rules: ["Usar al menos dos estampados distintos", "Mantener una paleta cromática coherente"]
+                },
+                {
+                    title: "Vintage Vibe 🕰️",
+                    description: "Arma un look inspirado en una década pasada (e.g. 70s, 80s o 90s).",
+                    difficulty: "MEDIUM",
+                    category: "VINTAGE",
+                    xp: 200,
+                    badgeName: "Time Traveler",
+                    rules: ["Inspiración vintage clara", "Escribir la década inspirada en el comentario del post"]
+                }
+            ];
+        }
 
         if (!newChallengesData || !newChallengesData.length) {
-            // Fallback if AI fails
+            // Fallback if AI fails and no defaults
             return NextResponse.json(activeChallenges);
         }
 

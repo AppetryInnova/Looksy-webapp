@@ -15,6 +15,7 @@ export default function AddItemForm({ onItemAdded }: { onItemAdded: () => void }
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [imageUrlInput, setImageUrlInput] = useState('');
     const [category, setCategory] = useState('Top');
+    const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
     const [color, setColor] = useState('');
     const [brand, setBrand] = useState('');
     const [loading, setLoading] = useState(false);
@@ -215,19 +216,83 @@ export default function AddItemForm({ onItemAdded }: { onItemAdded: () => void }
 
                 {/* Fields */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative' }}>
                         <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--color-text-dim)', textTransform: 'uppercase' }}>Categoría</label>
-                        <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            style={{ padding: '14px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white' }}
+                        
+                        <button
+                            type="button"
+                            onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
+                            style={{ 
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                padding: '14px', borderRadius: '16px', 
+                                background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', 
+                                color: 'var(--color-text)', cursor: 'pointer', textAlign: 'left', width: '100%',
+                                fontWeight: 600, fontSize: '0.9rem'
+                            }}
                         >
-                            <option value="Top">Tops</option>
-                            <option value="Bottom">Bottoms</option>
-                            <option value="Shoes">Calzado</option>
-                            <option value="Accessory">Accesorios</option>
-                            <option value="Outerwear">Abrigos</option>
-                        </select>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span>{
+                                    category === 'Top' ? '👕' :
+                                    category === 'Bottom' ? '👖' :
+                                    category === 'Shoes' ? '👟' :
+                                    category === 'Accessory' ? '👜' : '🧥'
+                                }</span>
+                                <span>{
+                                    category === 'Top' ? 'Tops' :
+                                    category === 'Bottom' ? 'Bottoms' :
+                                    category === 'Shoes' ? 'Calzado' :
+                                    category === 'Accessory' ? 'Accesorios' : 'Abrigos'
+                                }</span>
+                            </span>
+                            <span style={{ fontSize: '0.8rem', opacity: 0.6 }}>{categoryDropdownOpen ? '▲' : '▼'}</span>
+                        </button>
+
+                        {categoryDropdownOpen && (
+                            <>
+                                <div 
+                                    onClick={() => setCategoryDropdownOpen(false)}
+                                    style={{ position: 'fixed', inset: 0, zIndex: 90, background: 'transparent' }} 
+                                />
+                                <div className="glass-premium" style={{ 
+                                    position: 'absolute', top: '100%', left: 0, right: 0, 
+                                    background: 'var(--glass-elevated)', border: '1px solid var(--glass-border)',
+                                    borderRadius: '20px', padding: '8px', zIndex: 100, marginTop: '6px',
+                                    display: 'flex', flexDirection: 'column', gap: '4px',
+                                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                                }}>
+                                    {[
+                                        { value: 'Top', label: 'Tops', icon: '👕' },
+                                        { value: 'Bottom', label: 'Bottoms', icon: '👖' },
+                                        { value: 'Shoes', label: 'Calzado', icon: '👟' },
+                                        { value: 'Accessory', label: 'Accesorios', icon: '👜' },
+                                        { value: 'Outerwear', label: 'Abrigos', icon: '🧥' }
+                                    ].map(cat => (
+                                        <button
+                                            key={cat.value}
+                                            type="button"
+                                            onClick={() => {
+                                                setCategory(cat.value);
+                                                setCategoryDropdownOpen(false);
+                                            }}
+                                            style={{
+                                                display: 'flex', alignItems: 'center', gap: '10px',
+                                                padding: '10px 14px', borderRadius: '12px', border: 'none',
+                                                background: category === cat.value ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
+                                                color: category === cat.value ? 'var(--color-primary)' : 'var(--color-text-dim)',
+                                                fontWeight: category === cat.value ? 800 : 600,
+                                                fontSize: '0.9rem', cursor: 'pointer', textAlign: 'left',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            className="dropdown-item-hover"
+                                        >
+                                            <span>{cat.icon}</span>
+                                            <span>{cat.label}</span>
+                                            {category === cat.value && <span style={{ marginLeft: 'auto', fontWeight: 'bold' }}>✓</span>}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -239,7 +304,7 @@ export default function AddItemForm({ onItemAdded }: { onItemAdded: () => void }
                                 placeholder="Ejem. Negro, Azul..."
                                 value={color}
                                 onChange={(e) => setColor(e.target.value)}
-                                style={{ padding: '14px 14px 14px 40px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', width: '100%' }}
+                                style={{ padding: '14px 14px 14px 40px', borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--color-text)', width: '100%' }}
                             />
                         </div>
                     </div>
@@ -253,7 +318,7 @@ export default function AddItemForm({ onItemAdded }: { onItemAdded: () => void }
                                 placeholder="Ejem. Zara, Nike, Gucci..."
                                 value={brand}
                                 onChange={(e) => setBrand(e.target.value)}
-                                style={{ padding: '14px 14px 14px 40px', borderRadius: '16px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--glass-border)', color: 'white', width: '100%' }}
+                                style={{ padding: '14px 14px 14px 40px', borderRadius: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--color-text)', width: '100%' }}
                             />
                         </div>
                     </div>
@@ -287,6 +352,13 @@ export default function AddItemForm({ onItemAdded }: { onItemAdded: () => void }
                 }
                 @keyframes spin {
                     to { transform: rotate(360deg); }
+                }
+                .dropdown-item-hover:hover {
+                    background: rgba(255, 255, 255, 0.06) !important;
+                    color: var(--color-text) !important;
+                }
+                :global([data-theme='light']) .dropdown-item-hover:hover {
+                    background: rgba(0, 0, 0, 0.04) !important;
                 }
             `}</style>
         </form>

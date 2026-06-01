@@ -390,11 +390,16 @@ export default function Scanner() {
                             </div>
                         </label>
 
+                        <label htmlFor="gallery-input" className="btn-secondary" style={{ marginTop: '8px', cursor: 'pointer', padding: '10px 20px', borderRadius: '14px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)' }}>
+                            <span>🖼️ Elegir de Galería</span>
+                        </label>
+
                         <p className={styles.instructionText}>
                             {t('instruction', { mode: mode.toLowerCase() })}
                         </p>
 
                         <input id="camera-input" type="file" accept="image/*" capture="environment" onChange={handleFileChange} style={{ display: 'none' }} />
+                        <input id="gallery-input" type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                     </div>
                 )}
 
