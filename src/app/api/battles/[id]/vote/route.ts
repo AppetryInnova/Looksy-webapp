@@ -3,11 +3,30 @@ import { prisma } from '@/lib/prisma';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import logger from '@/lib/logger';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user) {
+        let userId = session?.user?.id;
+
+        // Mobile clients using Supabase Bearer token
+        if (!userId) {
+            const authHeader = request.headers.get('authorization');
+            if (authHeader?.startsWith('Bearer ')) {
+                const token = authHeader.substring(7);
+                try {
+                    const { data: { user }, error } = await supabase.auth.getUser(token);
+                    if (user && !error) {
+                        userId = user.id;
+                    }
+                } catch (err) {
+                    logger.error('Error verifying Supabase token in battle vote:', err);
+                }
+            }
+        }
+
+        if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -18,8 +37,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         if (!entryId) {
             return NextResponse.json({ error: 'Missing entryId' }, { status: 400 });
         }
-
-        const userId = (session.user as any).id;
 
         // Verify if vote already exists
         const existingVote = await prisma.battleVote.findUnique({
