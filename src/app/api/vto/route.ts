@@ -4,11 +4,30 @@ import { authOptions } from '@/lib/auth';
 import logger from '@/lib/logger';
 import { inngest } from '@/lib/inngest';
 import { prisma } from '@/lib/prisma';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(req: Request) {
     try {
         const session = await getServerSession(authOptions);
-        if (!session?.user?.id) {
+        let userId = session?.user?.id;
+
+        // Mobile clients using Supabase Bearer token
+        if (!userId) {
+            const authHeader = req.headers.get('authorization');
+            if (authHeader?.startsWith('Bearer ')) {
+                const token = authHeader.substring(7);
+                try {
+                    const { data: { user }, error } = await supabase.auth.getUser(token);
+                    if (user && !error) {
+                        userId = user.id;
+                    }
+                } catch (err) {
+                    logger.error('Error verifying Supabase token in VTO:', err);
+                }
+            }
+        }
+
+        if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -23,7 +42,7 @@ export async function POST(req: Request) {
 
         // Token Economy Logic
         const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
+            where: { id: userId },
             select: { gravityTokens: true, lastTokenReset: true }
         });
 
@@ -43,7 +62,7 @@ export async function POST(req: Request) {
             // Reset tokens to 5
             currentTokens = 5;
             await prisma.user.update({
-                where: { id: session.user.id },
+                where: { id: userId },
                 data: { gravityTokens: 5, lastTokenReset: now }
             });
         }
@@ -57,14 +76,14 @@ export async function POST(req: Request) {
 
         // Decrement token
         await prisma.user.update({
-            where: { id: session.user.id },
+            where: { id: userId },
             data: { gravityTokens: { decrement: 1 } }
         });
 
         // Create the async job in the database
         const job = await prisma.vTOJob.create({
             data: {
-                userId: session.user.id,
+                userId: userId,
                 baseModelUrl,
                 garmentImageUrl,
                 category,
