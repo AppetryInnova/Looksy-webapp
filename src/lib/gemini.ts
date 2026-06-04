@@ -5,16 +5,18 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export type AnalysisMode = 'OUTFIT' | 'BEAUTY' | 'COLOR' | 'WARDROBE' | 'FACIAL_PROFILE' | 'MAKEUP' | 'HAIRSTYLE';
 
-// Models to try in order - each has independent quotas on the free tier
 const TEXT_MODELS = [
+  "gemini-2.5-flash",
   "gemini-2.0-flash",
-  "gemini-1.5-flash",
-  "gemini-1.5-pro"
+  "gemini-flash-latest",
+  "gemini-2.5-pro",
+  "gemini-pro-latest"
 ];
 
 const IMAGE_MODELS = [
+  "gemini-2.5-flash",
   "gemini-2.0-flash",
-  "gemini-1.5-flash"
+  "gemini-flash-latest"
 ];
 
 function isQuotaError(error: any): boolean {
