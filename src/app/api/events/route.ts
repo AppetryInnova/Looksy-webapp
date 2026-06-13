@@ -1,18 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import logger from '@/lib/logger';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getUserIdFromRequest } from '@/lib/auth-mobile';
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        const userEmail = session?.user?.email;
+        const userId = await getUserIdFromRequest(request);
 
         let user = null;
-        if (userEmail) {
+        if (userId) {
             user = await prisma.user.findUnique({
-                where: { email: userEmail }
+                where: { id: userId }
             });
         }
 
@@ -45,13 +43,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.email) {
+        const userId = await getUserIdFromRequest(request);
+        if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const user = await prisma.user.findUnique({
-            where: { email: session.user.email }
+            where: { id: userId }
         });
 
         if (!user) {

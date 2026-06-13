@@ -11,6 +11,39 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
+        // --- Rate Limiting Enforcement (Google Gemini Cost Control) ---
+        const { prisma } = await import('@/lib/prisma');
+        const { aiRateLimiter } = await import('@/lib/redis');
+
+        if (aiRateLimiter) {
+            // Check if user is premium to bypass limits
+            let isPremium = false;
+            if (session.user.email) {
+                const user = await prisma.user.findUnique({
+                    where: { email: session.user.email },
+                    include: { subscription: true }
+                });
+                const plan = user?.subscription?.plan;
+                if (plan === 'PRO' || plan === 'ELITE') {
+                    isPremium = true;
+                }
+            }
+
+            if (!isPremium) {
+                const identifier = session.user.email || request.headers.get('x-forwarded-for') || '127.0.0.1';
+                const { success, limit, reset } = await aiRateLimiter.limit(identifier);
+                if (!success) {
+                    logger.warn(`Rate limit exceeded for identifier ${identifier} in server-side Gemini analyze API.`);
+                    return NextResponse.json({ 
+                        error: 'Daily limit reached. Upgrade to PRO or ELITE for unlimited usage.',
+                        limitReached: true,
+                        limit,
+                        reset
+                    }, { status: 429 });
+                }
+            }
+        }
+
         const formData = await request.formData();
         const file = formData.get('image') as File | null;
         const mode = formData.get('mode') as string | null;

@@ -17,7 +17,7 @@ type ItemDetailModalProps = {
     onUpdate: () => void;
 };
 
-export default function ItemDetailModal({ item, isOpen, onClose, onUpdate }: ItemDetailModalProps) {
+export default function ItemDetailModal({ item, isOpen, onClose, onUpdate, isOwner = true }: ItemDetailModalProps & { isOwner?: boolean }) {
     const [category, setCategory] = useState(item.category);
     const [color, setColor] = useState(item.color || '');
     const [brand, setBrand] = useState(item.brand || '');
@@ -126,25 +126,41 @@ export default function ItemDetailModal({ item, isOpen, onClose, onUpdate }: Ite
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', fontSize: '0.9rem' }}>
                             Categoría
                         </label>
-                        <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            style={{
+                        {!isOwner ? (
+                            <div style={{
                                 width: '100%',
                                 padding: '12px',
                                 borderRadius: '8px',
                                 border: '1px solid var(--glass-border)',
-                                background: 'rgba(255,255,255,0.05)',
+                                background: 'rgba(255,255,255,0.02)',
                                 color: 'var(--foreground)',
-                                fontSize: '1rem'
-                            }}
-                        >
-                            <option value="TOP">Blusa / Top</option>
-                            <option value="BOTTOM">Pantalón / Falda</option>
-                            <option value="SHOES">Zapatos</option>
-                            <option value="ACCESSORY">Accesorio</option>
-                            <option value="OUTERWEAR">Abrigo</option>
-                        </select>
+                                opacity: 0.7,
+                                fontSize: '1rem',
+                                boxSizing: 'border-box'
+                            }}>
+                                {category === 'TOP' ? 'Blusa / Top' : category === 'BOTTOM' ? 'Pantalón / Falda' : category === 'SHOES' ? 'Zapatos' : category === 'ACCESSORY' ? 'Accesorio' : 'Abrigo'}
+                            </div>
+                        ) : (
+                            <select
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--glass-border)',
+                                    background: 'rgba(255,255,255,0.05)',
+                                    color: 'var(--foreground)',
+                                    fontSize: '1rem'
+                                }}
+                            >
+                                <option value="TOP">Blusa / Top</option>
+                                <option value="BOTTOM">Pantalón / Falda</option>
+                                <option value="SHOES">Zapatos</option>
+                                <option value="ACCESSORY">Accesorio</option>
+                                <option value="OUTERWEAR">Abrigo</option>
+                            </select>
+                        )}
                     </div>
 
                     <div>
@@ -155,14 +171,16 @@ export default function ItemDetailModal({ item, isOpen, onClose, onUpdate }: Ite
                             type="text"
                             value={color}
                             onChange={(e) => setColor(e.target.value)}
+                            readOnly={!isOwner}
                             placeholder="Ej: Negro, Azul, Rojo"
                             style={{
                                 width: '100%',
                                 padding: '12px',
                                 borderRadius: '8px',
                                 border: '1px solid var(--glass-border)',
-                                background: 'rgba(255,255,255,0.05)',
+                                background: !isOwner ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
                                 color: 'var(--foreground)',
+                                opacity: !isOwner ? 0.7 : 1,
                                 fontSize: '1rem'
                             }}
                         />
@@ -176,14 +194,16 @@ export default function ItemDetailModal({ item, isOpen, onClose, onUpdate }: Ite
                             type="text"
                             value={brand}
                             onChange={(e) => setBrand(e.target.value)}
+                            readOnly={!isOwner}
                             placeholder="Ej: Zara, H&M, Nike"
                             style={{
                                 width: '100%',
                                 padding: '12px',
                                 borderRadius: '8px',
                                 border: '1px solid var(--glass-border)',
-                                background: 'rgba(255,255,255,0.05)',
+                                background: !isOwner ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)',
                                 color: 'var(--foreground)',
+                                opacity: !isOwner ? 0.7 : 1,
                                 fontSize: '1rem'
                             }}
                         />
@@ -191,44 +211,56 @@ export default function ItemDetailModal({ item, isOpen, onClose, onUpdate }: Ite
                 </div>
 
                 {/* Action Buttons */}
-                <div style={{ display: 'flex', gap: '12px' }}>
-                    <button
-                        onClick={handleSave}
-                        className="btn-luxury"
-                        disabled={saving}
-                        style={{ flex: 1 }}
-                    >
-                        {saving ? 'Guardando...' : 'Guardar'}
-                    </button>
+                {!isOwner ? (
                     <button
                         onClick={onClose}
                         className="btn-secondary"
-                        disabled={saving}
-                        style={{ flex: 1 }}
+                        style={{ width: '100%', padding: '12px' }}
                     >
-                        Cancelar
+                        Cerrar
                     </button>
-                </div>
+                ) : (
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <button
+                            onClick={handleSave}
+                            className="btn-luxury"
+                            disabled={saving}
+                            style={{ flex: 1 }}
+                        >
+                            {saving ? 'Guardando...' : 'Guardar'}
+                        </button>
+                        <button
+                            onClick={onClose}
+                            className="btn-secondary"
+                            disabled={saving}
+                            style={{ flex: 1 }}
+                        >
+                            Cancelar
+                        </button>
+                    </div>
+                )}
 
-                <div style={{ marginTop: '16px' }}>
-                    <button
-                        onClick={handleDelete}
-                        disabled={saving}
-                        style={{
-                            width: '100%',
-                            padding: '12px',
-                            background: confirmDelete ? '#ef4444' : 'transparent',
-                            color: confirmDelete ? 'white' : '#ef4444',
-                            border: '1px solid #ef4444',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontWeight: '600',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        {confirmDelete ? '¿Estás seguro? Haz clic de nuevo' : 'Eliminar Prenda'}
-                    </button>
-                </div>
+                {isOwner && (
+                    <div style={{ marginTop: '16px' }}>
+                        <button
+                            onClick={handleDelete}
+                            disabled={saving}
+                            style={{
+                                width: '100%',
+                                padding: '12px',
+                                background: confirmDelete ? '#ef4444' : 'transparent',
+                                color: confirmDelete ? 'white' : '#ef4444',
+                                border: '1px solid #ef4444',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            {confirmDelete ? '¿Estás seguro? Haz clic de nuevo' : 'Eliminar Prenda'}
+                        </button>
+                    </div>
+                )}
             </div>
 
             {showVTO ? (

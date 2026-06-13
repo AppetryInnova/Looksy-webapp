@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logger } from '@/lib/logger';
+import { getUserIdFromRequest } from '@/lib/auth-mobile';
 
 export async function GET(
     request: Request,
@@ -60,6 +61,24 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
+        const authenticatedUserId = await getUserIdFromRequest(request);
+
+        if (!authenticatedUserId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const item = await prisma.item.findUnique({
+            where: { id }
+        });
+
+        if (!item) {
+            return NextResponse.json({ error: 'Item not found' }, { status: 404 });
+        }
+
+        if (item.userId !== authenticatedUserId) {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
         await prisma.item.delete({
             where: { id },
         });

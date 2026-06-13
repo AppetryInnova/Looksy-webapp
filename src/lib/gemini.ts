@@ -340,4 +340,42 @@ export async function generateEventStyling(
   });
 }
 
+export async function generateStylistOutfits(wardrobe: any[], stylePreferences: any) {
+  const prompt = `
+    Eres el Asesor de Imagen de Lujo de Looksy.
+    Se te proporciona el ropero del usuario: ${JSON.stringify(wardrobe)}
+    Preferencias de estilo: ${JSON.stringify(stylePreferences)}
+
+    Crea 3 opciones de outfits completos diferentes (por ejemplo: Casual, Formal, Noche, Deportivo, etc.) utilizando EXCLUSIVAMENTE los IDs de prendas provistos en el ropero.
+    Cada outfit debe incluir al menos 2 prendas (ej. Remera y Pantalón).
+    
+    Responde estrictamente en formato JSON en Español con la siguiente estructura:
+    {
+      "outfits": [
+        {
+          "title": "Nombre del outfit (ej. Quiet Luxury Urbano)",
+          "description": "Una descripción detallada de por qué combinan estas prendas y consejos de estilo para el look.",
+          "confidence": 85,
+          "itemIds": ["id1", "id2"]
+        }
+      ]
+    }
+  `;
+
+  try {
+    return await runWithModelFallback(TEXT_MODELS, async (modelName) => {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { responseMimeType: "application/json" }
+      });
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      return JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+    });
+  } catch (error: any) {
+    logger.error('Error in generateStylistOutfits:', error.message);
+    throw error;
+  }
+}
+
 

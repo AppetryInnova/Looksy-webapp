@@ -16,7 +16,7 @@ type Item = {
     brand: string | null;
 };
 
-export default function WardrobeGrid({ items, loading, error, onRefresh, filter, onEmptyState }: { items: Item[]; loading: boolean; error: string | null; onRefresh: () => void; filter: string; onEmptyState?: () => void }) {
+export default function WardrobeGrid({ items, loading, error, onRefresh, filter, onEmptyState, isOwner = true }: { items: Item[]; loading: boolean; error: string | null; onRefresh: () => void; filter: string; onEmptyState?: () => void; isOwner?: boolean }) {
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
     const handleDelete = async (id: string) => {
@@ -147,6 +147,7 @@ export default function WardrobeGrid({ items, loading, error, onRefresh, filter,
                     isOpen={!!selectedItem}
                     onClose={() => setSelectedItem(null)}
                     onUpdate={onRefresh}
+                    isOwner={isOwner}
                 />
             )
             }

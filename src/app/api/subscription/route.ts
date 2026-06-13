@@ -1,14 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getUserIdFromRequest } from '@/lib/auth-mobile';
 import logger from '@/lib/logger';
 
 export async function POST(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const userId = await getUserIdFromRequest(request);
 
-        if (!session || !session.user?.email) {
+        if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
@@ -20,7 +19,7 @@ export async function POST(request: Request) {
         }
 
         // Upsert subscription
-        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        const user = await prisma.user.findUnique({ where: { id: userId } });
 
         if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
@@ -47,16 +46,16 @@ export async function POST(request: Request) {
     }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const userId = await getUserIdFromRequest(request);
 
-        if (!session || !session.user?.email) {
+        if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const user = await prisma.user.findUnique({
-            where: { email: session.user.email },
+            where: { id: userId },
             include: { subscription: true }
         });
 

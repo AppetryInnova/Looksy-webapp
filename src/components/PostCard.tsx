@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import posthog from 'posthog-js';
+import { useRouter } from '@/i18n/routing';
 
 interface Comment {
     id: string;
@@ -32,6 +33,7 @@ interface Post {
 interface PostCardProps {
     post: Post;
     currentUserId?: string;
+    onDelete?: () => void;
 }
 
 function timeAgo(dateStr: string): string {
@@ -44,7 +46,8 @@ function timeAgo(dateStr: string): string {
     return `${Math.floor(diff / 86400)}d`;
 }
 
-export default function PostCard({ post, currentUserId }: PostCardProps) {
+export default function PostCard({ post, currentUserId, onDelete }: PostCardProps) {
+    const router = useRouter();
     const [liked, setLiked] = useState(post.likedByMe);
     const [likeCount, setLikeCount] = useState(post._count.likes);
     const [likeAnim, setLikeAnim] = useState(false);
@@ -55,6 +58,31 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     const [submittingComment, setSubmittingComment] = useState(false);
     const [loadingComments, setLoadingComments] = useState(false);
     const [allCommentsLoaded, setAllCommentsLoaded] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+
+    const handleDelete = async () => {
+        if (!confirmDelete) {
+            setConfirmDelete(true);
+            setTimeout(() => setConfirmDelete(false), 3000);
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/posts/${post.id}`, { method: 'DELETE' });
+            if (res.ok) {
+                if (onDelete) {
+                    onDelete();
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                alert('Error al borrar la publicación');
+            }
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            alert('Error al borrar la publicación');
+        }
+    };
 
     const handleLike = async () => {
         if (!currentUserId) return;
@@ -140,21 +168,29 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
                 {post.user.avatarUrl ? (
                     <img
                         src={post.user.avatarUrl} alt={post.user.username ?? ''}
-                        style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(168,85,247,0.4)' }}
+                        onClick={() => router.push(`/profile/${post.user.id}`)}
+                        style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(168,85,247,0.4)', cursor: 'pointer' }}
                     />
                 ) : (
-                    <div style={{
-                        width: 40, height: 40, borderRadius: '50%',
-                        background: 'linear-gradient(135deg, #a855f7, #3b82f6)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '0.85rem', fontWeight: 700, color: 'white', flexShrink: 0
-                    }}>
+                    <div 
+                        onClick={() => router.push(`/profile/${post.user.id}`)}
+                        style={{
+                            width: 40, height: 40, borderRadius: '50%',
+                            background: 'linear-gradient(135deg, #a855f7, #3b82f6)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: '0.85rem', fontWeight: 700, color: 'white', flexShrink: 0,
+                            cursor: 'pointer'
+                        }}
+                    >
                         {initials}
                     </div>
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>
+                        <span 
+                            style={{ fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+                            onClick={() => router.push(`/profile/${post.user.id}`)}
+                        >
                             @{post.user.username ?? 'usuario'}
                         </span>
                         {post.user.isVerified && (
@@ -165,6 +201,24 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
                         {timeAgo(post.createdAt)}
                     </span>
                 </div>
+                {currentUserId === post.user.id && (
+                    <button
+                        onClick={handleDelete}
+                        style={{
+                            background: confirmDelete ? '#ef4444' : 'transparent',
+                            color: confirmDelete ? 'white' : '#ef4444',
+                            border: confirmDelete ? 'none' : '1px solid rgba(239, 68, 68, 0.3)',
+                            borderRadius: '8px',
+                            padding: '4px 8px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        {confirmDelete ? '¿Borrar?' : '🗑️'}
+                    </button>
+                )}
             </div>
 
             {/* Image */}

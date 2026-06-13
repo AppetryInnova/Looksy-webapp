@@ -1,18 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getUserIdFromRequest } from '@/lib/auth-mobile';
 
 // GET /api/posts — Feed paginado
 export async function GET(req: NextRequest) {
-    const session = await getServerSession(authOptions);
+    const authenticatedUserId = await getUserIdFromRequest(req);
     const { searchParams } = new URL(req.url);
     const cursor = searchParams.get('cursor');
+    const userIdParam = searchParams.get('userId');
     const limit = 20;
 
     try {
+        let where: Record<string, unknown> = {};
+
+        if (userIdParam) {
+            // Check privacy visibility of the target user
+            if (userIdParam !== authenticatedUserId) {
+                const targetUser = await prisma.user.findUnique({
+                    where: { id: userIdParam },
+                    select: { privacySettings: true }
+                });
+
+                if (!targetUser) {
+                    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+                }
+
+                let isPrivate = false;
+                if (targetUser.privacySettings) {
+                    try {
+                        const parsed = JSON.parse(targetUser.privacySettings);
+                        isPrivate = parsed.profileVisibility === 'private';
+                    } catch (_) {}
+                }
+
+                if (isPrivate) {
+                    let isFollowing = false;
+                    if (authenticatedUserId) {
+                        const follow = await prisma.follow.findUnique({
+                            where: {
+                                followerId_followingId: {
+                                    followerId: authenticatedUserId,
+                                    followingId: userIdParam
+                                }
+                            }
+                        });
+                        isFollowing = !!follow;
+                    }
+                    if (!isFollowing) {
+                        return NextResponse.json({ error: 'Private profile' }, { status: 403 });
+                    }
+                }
+            }
+            where.userId = userIdParam;
+        }
+
         const posts = await prisma.post.findMany({
             take: limit + 1,
+            where,
             ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
             orderBy: { createdAt: 'desc' },
             include: {
@@ -38,10 +82,9 @@ export async function GET(req: NextRequest) {
         const nextCursor = hasMore ? items[items.length - 1].id : null;
 
         // Annotate with current user's like status
-        const userId = session?.user?.id;
         const enriched = items.map(post => ({
             ...post,
-            likedByMe: userId ? post.likes.some(l => l.userId === userId) : false,
+            likedByMe: authenticatedUserId ? post.likes.some(l => l.userId === authenticatedUserId) : false,
         }));
 
         return NextResponse.json({ posts: enriched, nextCursor });
@@ -52,8 +95,8 @@ export async function GET(req: NextRequest) {
 
 // POST /api/posts — Crear post
 export async function POST(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
+    const authenticatedUserId = await getUserIdFromRequest(req);
+    if (!authenticatedUserId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -65,7 +108,7 @@ export async function POST(req: NextRequest) {
 
         const post = await prisma.post.create({
             data: {
-                userId: session.user.id,
+                userId: authenticatedUserId,
                 content: content?.trim() ?? '',
                 imageUrl: imageUrl ?? null,
             },

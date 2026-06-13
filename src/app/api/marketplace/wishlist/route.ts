@@ -1,27 +1,18 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getUserIdFromRequest } from '@/lib/auth-mobile';
 import logger from '@/lib/logger';
 
 // GET - Fetch user's wishlist
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.email) {
+        const userId = await getUserIdFromRequest(request);
+        if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email }
-        });
-
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
-        }
-
         const wishlist = await prisma.wishlist.findMany({
-            where: { userId: user.id },
+            where: { userId: userId },
             include: {
                 storeItem: {
                     include: {
@@ -44,17 +35,9 @@ export async function GET() {
 // POST - Add item to wishlist
 export async function POST(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.email) {
+        const userId = await getUserIdFromRequest(request);
+        if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email }
-        });
-
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
         const { storeItemId } = await request.json();
@@ -63,7 +46,7 @@ export async function POST(request: Request) {
         const existing = await prisma.wishlist.findUnique({
             where: {
                 userId_storeItemId: {
-                    userId: user.id,
+                    userId: userId,
                     storeItemId
                 }
             }
@@ -75,7 +58,7 @@ export async function POST(request: Request) {
 
         const wishlistItem = await prisma.wishlist.create({
             data: {
-                userId: user.id,
+                userId: userId,
                 storeItemId
             }
         });
@@ -90,24 +73,16 @@ export async function POST(request: Request) {
 // DELETE - Remove item from wishlist
 export async function DELETE(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
-        if (!session?.user?.email) {
+        const userId = await getUserIdFromRequest(request);
+        if (!userId) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { email: session.user.email }
-        });
-
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
         const { storeItemId } = await request.json();
 
         await prisma.wishlist.deleteMany({
             where: {
-                userId: user.id,
+                userId: userId,
                 storeItemId
             }
         });

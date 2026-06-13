@@ -131,8 +131,8 @@ export default function CommunityPage() {
                             ) : (
                                 <>
                                     {posts.map(post => (
-                                        <PostCard key={post.id} post={post} currentUserId={session?.user?.id} />
-                                    ))}
+                                         <PostCard key={post.id} post={post} currentUserId={session?.user?.id} onDelete={() => fetchPosts()} />
+                                     ))}
                                     {nextCursor && (
                                         <button
                                             onClick={() => fetchPosts(nextCursor)}

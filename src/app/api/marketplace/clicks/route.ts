@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import logger from '@/lib/logger';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getUserIdFromRequest } from '@/lib/auth-mobile';
+import { getAffiliateRedirectUrl } from '@/lib/affiliate';
 
 export async function POST(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const userId = await getUserIdFromRequest(request);
         const body = await request.json();
-        const { storeItemId } = body;
+        const { storeItemId, country, locale } = body;
 
         if (!storeItemId) {
             return NextResponse.json({ error: 'storeItemId is required' }, { status: 400 });
@@ -16,7 +16,8 @@ export async function POST(request: Request) {
 
         // Verify that the product exists before recording a click
         const product = await prisma.storeItem.findUnique({
-            where: { id: storeItemId }
+            where: { id: storeItemId },
+            include: { store: true }
         });
 
         if (!product) {
@@ -24,15 +25,27 @@ export async function POST(request: Request) {
         }
 
         // Record the click
-        const userId = session?.user ? (session.user as any).id : null;
         const affiliateClick = await prisma.affiliateClick.create({
             data: {
                 storeItemId,
-                userId: userId || undefined // Will set to null if undefined due to relation rules or we can pass null directly if it allows it. In Prisma, relation fields set to null can be passed as null or undefined.
+                userId: userId || undefined
             }
         });
 
-        return NextResponse.json({ success: true, clickId: affiliateClick.id });
+        // Generate dynamic affiliate redirect URL centrally
+        const redirectUrl = getAffiliateRedirectUrl({
+            url: product.affiliateUrl || undefined,
+            productName: product.name,
+            storeName: product.store?.name || 'Tienda',
+            locale: locale || 'es',
+            country: country || 'UY'
+        });
+
+        return NextResponse.json({ 
+            success: true, 
+            clickId: affiliateClick.id,
+            redirectUrl
+        });
     } catch (error: any) {
         logger.error('Error recording affiliate click:', error);
         return NextResponse.json({ error: 'Error recording affiliate click' }, { status: 500 });

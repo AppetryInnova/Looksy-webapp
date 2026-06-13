@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import logger from '@/lib/logger';
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { getUserIdFromRequest } from '@/lib/auth-mobile';
 
 export async function GET(request: Request) {
     try {
@@ -14,16 +13,100 @@ export async function GET(request: Request) {
         const page = parseInt(searchParams.get('page') || '1');
         const limit = parseInt(searchParams.get('limit') || '12');
         const aiMode = searchParams.get('ai_mode') === 'true';
+        const p2p = searchParams.get('p2p') === 'true';
 
-        const session = await getServerSession(authOptions);
+        const userId = await getUserIdFromRequest(request);
+
+        if (p2p) {
+            const where: Record<string, any> = {
+                OR: [
+                    { isForSale: true },
+                    { isForRent: true }
+                ]
+            };
+
+            if (userId) {
+                where.userId = { not: userId };
+            }
+
+            if (category && category !== 'all') {
+                where.category = { contains: category };
+            }
+
+            if (search) {
+                where.OR = [
+                    { name: { contains: search } },
+                    { brand: { contains: search } },
+                    { color: { contains: search } },
+                    { user: { username: { contains: search } } }
+                ];
+            }
+
+            if (minPrice || maxPrice) {
+                const priceFilter: Record<string, number> = {};
+                if (minPrice) priceFilter.gte = parseFloat(minPrice);
+                if (maxPrice) priceFilter.lte = parseFloat(maxPrice);
+                where.price = priceFilter;
+            }
+
+            const skip = (page - 1) * limit;
+
+            const [items, total] = await Promise.all([
+                prisma.item.findMany({
+                    where,
+                    take: limit,
+                    skip,
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                avatarUrl: true
+                            }
+                        }
+                    }
+                }),
+                prisma.item.count({ where })
+            ]);
+
+            const mappedProducts = items.map(item => ({
+                id: item.id,
+                name: item.name || `${item.color || ''} ${item.brand || ''} ${item.category}`.trim(),
+                price: item.price || item.rentalPrice || 0.0,
+                rentalPrice: item.rentalPrice,
+                isForSale: item.isForSale,
+                isForRent: item.isForRent,
+                imageUrl: item.imageUrl,
+                category: item.category,
+                inStock: true,
+                store: {
+                    id: `user-${item.user?.id || 'unknown'}`,
+                    name: item.user?.username || 'Usuario Looksy',
+                    rating: 5.0,
+                    ownerId: item.userId
+                },
+                _count: { wishlist: 0 }
+            }));
+
+            return NextResponse.json({
+                products: mappedProducts,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit)
+                }
+            });
+        }
 
         const where: Record<string, any> = {
             inStock: true
         };
 
-        if (aiMode && session?.user) {
+        if (aiMode && userId) {
             const user = await prisma.user.findUnique({
-                where: { id: (session.user as any).id },
+                where: { id: userId },
                 select: { budgetRange: true, stylePreferences: true }
             });
 

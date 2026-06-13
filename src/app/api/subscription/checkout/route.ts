@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getUserIdFromRequest } from '@/lib/auth-mobile';
 
 // POST /api/subscription/checkout — Simulated checkout (Stripe-ready)
 export async function POST(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     try {
+        const userId = await getUserIdFromRequest(req);
+        if (!userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const { plan, paymentMethod } = await req.json();
 
         if (!['PRO', 'ELITE'].includes(plan)) {
@@ -31,9 +30,9 @@ export async function POST(req: NextRequest) {
         endDate.setMonth(endDate.getMonth() + 1);
 
         await prisma.subscription.upsert({
-            where: { userId: session.user.id },
+            where: { userId },
             create: {
-                userId: session.user.id,
+                userId,
                 plan,
                 status: 'ACTIVE',
                 endDate,
@@ -45,6 +44,7 @@ export async function POST(req: NextRequest) {
                 endDate,
             },
         });
+
 
         return NextResponse.json({
             success: true,

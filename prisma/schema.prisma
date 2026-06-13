@@ -147,6 +147,11 @@ model User {
 
   // Affiliate Monetization
   affiliateClicks   AffiliateClick[]
+
+  // Chat Rooms
+  chatRoomsAsUser1 ChatRoom[] @relation("ChatUser1")
+  chatRoomsAsUser2 ChatRoom[] @relation("ChatUser2")
+  promoCodes       PromoCode[] @relation("UserPromoCodes")
 }
 
 model Subscription {
@@ -200,6 +205,12 @@ model Item {
   occasion    String?
   season      String?
   embedding   Unsupported("vector(768)")?
+  
+  // P2P Circular Fashion Marketplace
+  price       Float?
+  rentalPrice Float?
+  isForSale   Boolean  @default(false)
+  isForRent   Boolean  @default(false)
   
   // Relations
   plannedForEvents EventAttendee[]
@@ -652,3 +663,59 @@ model AffiliateClick {
   @@index([userId])
   @@index([storeItemId])
 }
+
+// ---------------------------------------------------------
+// REAL-TIME DMs CHAT 💬
+// ---------------------------------------------------------
+
+model ChatRoom {
+  id        String        @id @default(cuid())
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+  
+  user1Id   String
+  user1     User          @relation("ChatUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2Id   String
+  user2     User          @relation("ChatUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+
+  @@unique([user1Id, user2Id])
+  @@index([user1Id])
+  @@index([user2Id])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  senderId  String
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  @@index([roomId])
+  @@index([createdAt])
+}
+
+model ProcessedPayment {
+  id        String   @id @default(cuid())
+  paymentId String   @unique
+  provider  String   // MERCADOPAGO, STRIPE
+  amount    Float?
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+model PromoCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  type      String    // "TOKENS" o "SUBSCRIPTION"
+  value     Int       // Cantidad de tokens (ej: 50) o meses
+  plan      String?   // "PRO" o "ELITE" si el tipo es SUBSCRIPTION
+  isActive  Boolean   @default(true)
+  usedById  String?
+  usedBy    User?     @relation("UserPromoCodes", fields: [usedById], references: [id])
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+

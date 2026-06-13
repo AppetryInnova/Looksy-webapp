@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { PostSkeleton } from '@/components/ui/Skeleton';
 import OptimizedImage from '@/components/OptimizedImage';
 import CommentsSheet from '@/components/CommentsSheet';
@@ -37,6 +38,7 @@ interface SocialFeedProps {
 
 export default function SocialFeedImmersive({ feedType }: SocialFeedProps) {
     const { data: session } = useSession();
+    const router = useRouter();
     const t = useTranslations('SocialFeed');
     const [scans, setScans] = useState<Scan[]>([]);
     const [loading, setLoading] = useState(true);
@@ -202,7 +204,13 @@ export default function SocialFeedImmersive({ feedType }: SocialFeedProps) {
                             >
                                 {/* Left Side: User Info & Tags */}
                                 <div className={styles.bottomLeft}>
-                                    <h3 className={styles.username}>@{scan.user?.username || 'user'}</h3>
+                                    <h3 
+                                        className={styles.username}
+                                        onClick={() => scan.user?.id && router.push(`/profile/${scan.user.id}`)}
+                                        style={{ cursor: 'pointer' }}
+                                    >
+                                        @{scan.user?.username || 'user'}
+                                    </h3>
                                     <p className={styles.harmonyScore}>Harmonía: {scan.harmonyScore}% ✨</p>
                                     <div className={styles.hotspots}>
                                         <button className={styles.tagBtn}>👖 Vintage Denim</button>

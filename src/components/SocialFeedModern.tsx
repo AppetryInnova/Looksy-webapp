@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from '@/i18n/routing';
 import { supabase } from '@/lib/supabase';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import LoadingSkeleton from '@/components/LoadingSkeleton';
@@ -51,6 +52,7 @@ interface SocialFeedProps {
 
 export default function SocialFeedModern({ feedType }: SocialFeedProps) {
     const { data: session } = useSession();
+    const router = useRouter();
     const t = useTranslations('SocialFeed');
     const tc = useTranslations('Common');
     const [scans, setScans] = useState<Scan[]>([]);
@@ -289,6 +291,22 @@ export default function SocialFeedModern({ feedType }: SocialFeedProps) {
         }
     };
 
+    const handleDeleteScan = async (scanId: string) => {
+        if (!confirm('¿Estás seguro de borrar este outfit?')) return;
+        try {
+            const res = await fetch(`/api/scans/${scanId}`, { method: 'DELETE' });
+            if (res.ok) {
+                setScans(prev => prev.filter(s => s.id !== scanId));
+                posthog.capture('scan_deleted', { scanId });
+            } else {
+                alert('Error al borrar outfit');
+            }
+        } catch (error) {
+            logger.error('Error deleting scan:', error);
+            alert('Error al borrar outfit');
+        }
+    };
+
     const handleLike = async (scanId: string) => {
         try {
             const res = await fetch(`/api/scans/${scanId}/like`, {
@@ -496,7 +514,11 @@ export default function SocialFeedModern({ feedType }: SocialFeedProps) {
                             <div key={scan.id}>
                                 <div className={styles.feedCard}>
                                     <div className={styles.cardHeader}>
-                                        <div className={styles.userAvatar}>
+                                        <div 
+                                            className={styles.userAvatar}
+                                            onClick={() => scan.user?.id && router.push(`/profile/${scan.user.id}`)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
                                             {scan.user?.avatarUrl ? (
                                                 <OptimizedImage
                                                     src={scan.user.avatarUrl}
@@ -507,7 +529,11 @@ export default function SocialFeedModern({ feedType }: SocialFeedProps) {
                                                 scan.user?.username?.charAt(0).toUpperCase() || 'U'
                                             )}
                                         </div>
-                                        <div className={styles.userInfo}>
+                                        <div 
+                                            className={styles.userInfo}
+                                            onClick={() => scan.user?.id && router.push(`/profile/${scan.user.id}`)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
                                             <div className={styles.username}>
                                                 @{scan.user?.username || t('usuario')}
                                                 {scan.user?.isVerified && <span className={styles.verifiedBadge}>✓</span>}
@@ -515,12 +541,22 @@ export default function SocialFeedModern({ feedType }: SocialFeedProps) {
                                             <div className={styles.timestamp}>{formatTimeAgo(scan.createdAt)}</div>
                                         </div>
 
-                                        {scan.user?.id !== session?.user?.id && (
+                                        {scan.user?.id !== session?.user?.id ? (
+                                            scan.user?.id && (
+                                                <button
+                                                    onClick={() => handleFollow(scan.user!.id, !!scan.isFollowing)}
+                                                    className={`${styles.followButton} ${scan.isFollowing ? styles.following : ''}`}
+                                                >
+                                                    {scan.isFollowing ? t('following') : t('follow')}
+                                                </button>
+                                            )
+                                        ) : (
                                             <button
-                                                onClick={() => handleFollow(scan.user!.id, !!scan.isFollowing)}
-                                                className={`${styles.followButton} ${scan.isFollowing ? styles.following : ''}`}
+                                                onClick={() => handleDeleteScan(scan.id)}
+                                                style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1.1rem', padding: '4px' }}
+                                                title="Eliminar Outfit"
                                             >
-                                                {scan.isFollowing ? t('following') : t('follow')}
+                                                🗑️
                                             </button>
                                         )}
                                     </div>

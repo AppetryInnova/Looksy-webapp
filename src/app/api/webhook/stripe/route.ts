@@ -41,45 +41,63 @@ export async function POST(req: Request) {
           break;
       }
 
-      if (session.mode === 'payment' && session.metadata?.purchaseType === 'tokens') {
-          // Es una compra de tokens
-          const amount = parseInt(session.metadata?.amount || '0', 10);
-          logger.info(`Valid checkout session for User ${userId}. Adding ${amount} tokens.`);
-          
-          try {
-              await prisma.user.update({
-                  where: { id: userId },
-                  data: { gravityTokens: { increment: amount } }
-              });
-              logger.info(`User ${userId} successfully received ${amount} tokens.`);
-          } catch (e) {
-              logger.error(`Failed to add tokens to user ${userId}:`, e);
-          }
-      } else {
-          // Es una suscripción ELITE
-          logger.info(`Valid checkout session for User ${userId}. Upgrading to ELITE.`);
+      // Check if payment was already processed (Idempotency)
+      const existingPayment = await prisma.processedPayment.findUnique({
+        where: { paymentId: session.id }
+      });
 
-          try {
-            await prisma.subscription.upsert({
-                where: { userId },
-                create: {
-                    userId,
-                    plan: "ELITE", // Hardcoded para este MVP
-                    status: "ACTIVE",
-                    stripeCustomerId: customerId,
-                    stripeSubscriptionId: subscriptionId,
-                },
-                update: {
-                    plan: "ELITE",
-                    status: "ACTIVE",
-                    stripeCustomerId: customerId,
-                    stripeSubscriptionId: subscriptionId,
-                }
+      if (existingPayment) {
+        logger.info(`Webhook Warning: Stripe Checkout Session ${session.id} already processed. Skipping duplicate.`);
+        break;
+      }
+
+      try {
+        await prisma.$transaction(async (tx) => {
+          // Record payment to guarantee idempotency
+          await tx.processedPayment.create({
+            data: {
+              paymentId: session.id,
+              provider: 'STRIPE',
+              userId: userId,
+              amount: session.amount_total ? session.amount_total / 100 : null
+            }
+          });
+
+          if (session.mode === 'payment' && session.metadata?.purchaseType === 'tokens') {
+            // Es una compra de tokens
+            const amount = parseInt(session.metadata?.amount || '0', 10);
+            logger.info(`Valid checkout session for User ${userId}. Adding ${amount} tokens via Stripe transaction.`);
+            
+            await tx.user.update({
+              where: { id: userId },
+              data: { gravityTokens: { increment: amount } }
+            });
+            logger.info(`User ${userId} successfully received ${amount} tokens.`);
+          } else {
+            // Es una suscripción ELITE
+            logger.info(`Valid checkout session for User ${userId}. Upgrading to ELITE via Stripe transaction.`);
+
+            await tx.subscription.upsert({
+              where: { userId },
+              create: {
+                userId,
+                plan: "ELITE", // Hardcoded para este MVP
+                status: "ACTIVE",
+                stripeCustomerId: customerId,
+                stripeSubscriptionId: subscriptionId,
+              },
+              update: {
+                plan: "ELITE",
+                status: "ACTIVE",
+                stripeCustomerId: customerId,
+                stripeSubscriptionId: subscriptionId,
+              }
             });
             logger.info(`User ${userId} successfully upgraded to premium via Stripe.`);
-          } catch (e) {
-              logger.error('Failed to update user subscription status in database:', e);
           }
+        });
+      } catch (txErr: any) {
+        logger.error(`Prisma transaction failed processing Stripe checkout for user ${userId}:`, txErr);
       }
       break;
 

@@ -6,6 +6,7 @@ import { checkAndAwardBadges } from '@/lib/badges';
 import logger from '@/lib/logger';
 import { inngest } from '@/lib/inngest';
 import { supabase } from '@/lib/supabase';
+import { getUserIdFromRequest } from '@/lib/auth-mobile';
 
 export async function POST(request: Request) {
     try {
@@ -180,7 +181,7 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
     try {
-        const session = await getServerSession(authOptions);
+        const authenticatedUserId = await getUserIdFromRequest(request);
         const { searchParams } = new URL(request.url);
         const userId = searchParams.get('userId');
         const following = searchParams.get('following') === 'true';
@@ -188,15 +189,52 @@ export async function GET(request: Request) {
         let where: Record<string, unknown> = {};
 
         if (userId) {
+            // Check privacy visibility of the target user
+            if (userId !== authenticatedUserId) {
+                const targetUser = await prisma.user.findUnique({
+                    where: { id: userId },
+                    select: { privacySettings: true }
+                });
+
+                if (!targetUser) {
+                    return NextResponse.json({ error: 'User not found' }, { status: 404 });
+                }
+
+                let isPrivate = false;
+                if (targetUser.privacySettings) {
+                    try {
+                        const parsed = JSON.parse(targetUser.privacySettings);
+                        isPrivate = parsed.profileVisibility === 'private';
+                    } catch (_) {}
+                }
+
+                if (isPrivate) {
+                    let isFollowing = false;
+                    if (authenticatedUserId) {
+                        const follow = await prisma.follow.findUnique({
+                            where: {
+                                followerId_followingId: {
+                                    followerId: authenticatedUserId,
+                                    followingId: userId
+                                }
+                            }
+                        });
+                        isFollowing = !!follow;
+                    }
+                    if (!isFollowing) {
+                        return NextResponse.json({ error: 'Private profile' }, { status: 403 });
+                    }
+                }
+            }
             where.userId = userId;
         } else if (following) {
-            if (!session || !session.user?.id) {
+            if (!authenticatedUserId) {
                 return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
             }
 
             // Get list of followed user IDs
             const followedUsers = await prisma.follow.findMany({
-                where: { followerId: session.user.id },
+                where: { followerId: authenticatedUserId },
                 select: { followingId: true }
             });
 
